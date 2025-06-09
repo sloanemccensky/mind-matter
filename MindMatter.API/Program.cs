@@ -1,6 +1,4 @@
 using Microsoft.Data.SqlClient;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using MindMatter.API.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,16 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Adds CORS service, as the front and back ends are on different ports during dev
+// Adds CORS service, as the front and back ends are on different ports for now
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")  // your React dev server URL
+            policy.WithOrigins("http://localhost:5173")  // React dev server URL
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
+
 });
 
 var app = builder.Build();
@@ -35,19 +34,28 @@ if (app.Environment.IsDevelopment())
 
 // app.UseHttpsRedirection();
 
+// POST to create new entries
 app.MapPost("/journalentries", async (JournalEntry entry, IConfiguration config) =>
 {
+
+    // Get the connection string in order to conect to the database
+    // and insert the new journal entry
     var connectionString = config.GetConnectionString("DefaultConnection");
 
+    // Using the connection string, open a connection to the database
+    // and execute the SQL command to insert the new journal entry
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
 
+    // Prepare the SQL command to insert the new journal entry
+    // and return the new ID of the entry
     var command = new SqlCommand(@"
         INSERT INTO JournalEntries (UserId, Date, Content, Mood) 
         VALUES (@UserId, @Date, @Content, @Mood);
         SELECT SCOPE_IDENTITY();
     ", connection);
 
+    // Add parameters to the command to prevent SQL injection
     command.Parameters.AddWithValue("@UserId", (object?)entry.UserId ?? DBNull.Value);
     command.Parameters.AddWithValue("@Date", DateTime.Now);
     command.Parameters.AddWithValue("@Content", (object?)entry.Content ?? DBNull.Value);
@@ -58,78 +66,85 @@ app.MapPost("/journalentries", async (JournalEntry entry, IConfiguration config)
 
     // Return the new ID as well
     return Results.Created($"/journalentries/{newId}", new { Id = newId, entry.UserId, entry.Content, entry.Mood, Date = DateTime.Now });
+
 });
 
+// GET to retrieve all entries for a specific user
 app.MapGet("/journalentries", async (string userId, IConfiguration config) =>
 {
-    var connectionString = config.GetConnectionString("DefaultConnection");
 
-    using (var connection = new SqlConnection(connectionString))
-    {
-        await connection.OpenAsync();
-
-        var command = new SqlCommand(@"
-            SELECT * FROM JournalEntries WHERE UserId = @UserId
-        ", connection);
-
-        command.Parameters.AddWithValue("@UserId", userId);
-
-        var reader = await command.ExecuteReaderAsync();
-        var results = new List<JournalEntry>();
-
-        while (await reader.ReadAsync())
-        {
-            results.Add(new JournalEntry
-            {
-                Id = reader.GetInt32(0),
-                UserId = reader.GetString(1),
-                Date = reader.GetDateTime(2),
-                Content = reader.GetString(3),
-                Mood = reader.IsDBNull(4) ? null : (int?)reader.GetInt32(4)
-            });
-        }
-
-        return Results.Ok(results);
-    }
-});
-
-app.MapDelete("/journalentries/{id:int}", async (int id, IConfiguration config) =>
-{
     var connectionString = config.GetConnectionString("DefaultConnection");
 
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
 
-    var command = new SqlCommand("DELETE FROM JournalEntries WHERE Id = @Id", connection);
+    var command = new SqlCommand(
+        "SELECT Id, UserId, Date, Content, Mood FROM JournalEntries WHERE UserId = @UserId",
+        connection);
+    command.Parameters.AddWithValue("@UserId", userId);
+
+    var results = new List<JournalEntry>();
+    using var reader = await command.ExecuteReaderAsync();
+
+    while (await reader.ReadAsync())
+    {
+        results.Add(new JournalEntry
+        {
+            Id = reader.GetInt32(0),
+            UserId = reader.GetString(1),
+            Date = reader.GetDateTime(2),
+            Content = reader.GetString(3),
+            Mood = reader.IsDBNull(4) ? null : (int?)reader.GetInt32(4)
+        });
+    }
+
+    return Results.Ok(results);
+
+});
+
+// DELETE to remove an entry by ID
+app.MapDelete("/journalentries/{id:int}", async (int id, IConfiguration config) =>
+{
+
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    using var command = new SqlCommand("DELETE FROM JournalEntries WHERE Id = @Id", connection);
     command.Parameters.AddWithValue("@Id", id);
 
     var rowsAffected = await command.ExecuteNonQueryAsync();
     return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
+
 });
 
-app.MapPut("/journalentries/{id}", async (int id, JournalEntry updatedEntry, IConfiguration config) =>
+// PUT to update an existing entry by ID
+app.MapPut("/journalentries/{id:int}", async (int id, JournalEntry updatedEntry, IConfiguration config) =>
 {
+
     var connectionString = config.GetConnectionString("DefaultConnection");
 
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
 
-    var command = new SqlCommand(@"
+    var query = @"
         UPDATE JournalEntries
         SET Content = @Content, Mood = @Mood
         WHERE Id = @Id
-    ", connection);
+    ";
 
+    using var command = new SqlCommand(query, connection);
     command.Parameters.AddWithValue("@Id", id);
     command.Parameters.AddWithValue("@Content", (object?)updatedEntry.Content ?? DBNull.Value);
     command.Parameters.AddWithValue("@Mood", (object?)updatedEntry.Mood ?? DBNull.Value);
 
     var rowsAffected = await command.ExecuteNonQueryAsync();
-
     return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
+
 });
 
-
+// GET to test database connection
 app.MapGet("/api/testdb/connection", () =>
 {
     try
@@ -141,12 +156,9 @@ app.MapGet("/api/testdb/connection", () =>
     }
     catch (SqlException ex)
     {
-        return Results.Problem($"Dafuq DB failed daWhoDatIs: {ex.Message}");
+        return Results.Problem($"Dafuq DB failed: {ex.Message}");
     }
+    
 });
 
-
-
-
 app.Run();
-
