@@ -131,7 +131,7 @@ TBD
 ## Roadmap
 
 - [x] Pitch the project idea
-- [ ] Finalize technologies for devlopment
+- [x] Finalize technologies for devlopment
 - [ ] Create and finalize the overall development blueprint
 - [ ] Research necessary app documentation / preparatory courses
 - [ ] Begin technical development
@@ -140,6 +140,16 @@ TBD
 - [ ] Application testing stage
 - [ ] Finish README upon completion
 - [ ] Turn-in !!!
+
+## Feature Implementation Progress
+
+- [x] Journal component
+      - [ ] Create entries
+      - [ ] Edit entries
+      - [ ] Delete entries
+      - [ ] Prompt generator
+          - [ ] AI-generated prompts
+      - [ ] 
 
 
 
