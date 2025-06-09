@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "3jwIZBBGrLdbXazNUdXwHBD5j+F2nPF6lbTHZuEb6Wk=",
+  "Source": "MindMatter.API",
+  "BasePath": "_content/MindMatter.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
