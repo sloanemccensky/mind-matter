@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS service
+// Adds CORS service, as the front and back ends are on different ports during dev
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",

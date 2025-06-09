@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MindMatter.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b6f47183e8cb0ed2d00cc7ccc0387777f83b8e4c")]
 [assembly: System.Reflection.AssemblyProductAttribute("MindMatter.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MindMatter.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
