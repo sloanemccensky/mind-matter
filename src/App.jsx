@@ -3,6 +3,7 @@ import './App.css'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Journal from "./pages/journal";
 import Sidebar from "./components/sidebar";
+import Mood from "./pages/mood";
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
           <Routes>
             <Route path="/" element={<div>Homepage TBD</div>} />
             <Route path="/journal" element={<Journal userId={currentUserId} />} />
+            <Route path="/mood" element={<Mood userId={currentUserId} />} />
           </Routes>
         </div>
       </div>

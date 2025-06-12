@@ -47,26 +47,28 @@ app.MapPost("/journalentries", async (JournalEntry entry, IConfiguration config)
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
 
+    var entryDate = entry.Date ?? DateTime.Now;
+
     // Prepare the SQL command to insert the new journal entry
     // and return the new ID of the entry
     var command = new SqlCommand(@"
-        INSERT INTO JournalEntries (UserId, Date, Content, Mood) 
-        VALUES (@UserId, @Date, @Content, @Mood);
+        INSERT INTO JournalEntries (UserId, Date, Content, Mood, Emotion) 
+        VALUES (@UserId, @Date, @Content, @Mood, @Emotion);
         SELECT SCOPE_IDENTITY();
     ", connection);
 
     // Add parameters to the command to prevent SQL injection
     command.Parameters.AddWithValue("@UserId", (object?)entry.UserId ?? DBNull.Value);
-    command.Parameters.AddWithValue("@Date", DateTime.Now);
+    command.Parameters.AddWithValue("@Date", (object?)entry.Date ?? DateTime.Now);
     command.Parameters.AddWithValue("@Content", (object?)entry.Content ?? DBNull.Value);
     command.Parameters.AddWithValue("@Mood", (object?)entry.Mood ?? DBNull.Value);
+    command.Parameters.AddWithValue("@Emotion", (object?)entry.Emotion ?? DBNull.Value);
 
     var result = await command.ExecuteScalarAsync();
     var newId = Convert.ToInt32(result);
 
     // Return the new ID as well
-    return Results.Created($"/journalentries/{newId}", new { Id = newId, entry.UserId, entry.Content, entry.Mood, Date = DateTime.Now });
-
+    return Results.Created($"/journalentries/{newId}", new { Id = newId, entry.UserId, entry.Content, entry.Mood, Date = entryDate });
 });
 
 // GET to retrieve all entries for a specific user
@@ -79,7 +81,7 @@ app.MapGet("/journalentries", async (string userId, IConfiguration config) =>
     await connection.OpenAsync();
 
     var command = new SqlCommand(
-        "SELECT Id, UserId, Date, Content, Mood FROM JournalEntries WHERE UserId = @UserId",
+        "SELECT Id, UserId, Date, Content, Mood, Emotion FROM JournalEntries WHERE UserId = @UserId",
         connection);
     command.Parameters.AddWithValue("@UserId", userId);
 
@@ -88,13 +90,16 @@ app.MapGet("/journalentries", async (string userId, IConfiguration config) =>
 
     while (await reader.ReadAsync())
     {
+        // Console.WriteLine($"Retrieved Entry: {reader.GetDateTime(2)}");
+
         results.Add(new JournalEntry
         {
             Id = reader.GetInt32(0),
             UserId = reader.GetString(1),
             Date = reader.GetDateTime(2),
             Content = reader.GetString(3),
-            Mood = reader.IsDBNull(4) ? null : (int?)reader.GetInt32(4)
+            Mood = reader.IsDBNull(4) ? null : (int?)reader.GetInt32(4),
+            Emotion = reader.IsDBNull(5) ? null : reader.GetString(5)
         });
     }
 
@@ -130,7 +135,7 @@ app.MapPut("/journalentries/{id:int}", async (int id, JournalEntry updatedEntry,
 
     var query = @"
         UPDATE JournalEntries
-        SET Content = @Content, Mood = @Mood
+        SET Content = @Content, Mood = @Mood, Emotion = @Emotion
         WHERE Id = @Id
     ";
 
@@ -138,6 +143,7 @@ app.MapPut("/journalentries/{id:int}", async (int id, JournalEntry updatedEntry,
     command.Parameters.AddWithValue("@Id", id);
     command.Parameters.AddWithValue("@Content", (object?)updatedEntry.Content ?? DBNull.Value);
     command.Parameters.AddWithValue("@Mood", (object?)updatedEntry.Mood ?? DBNull.Value);
+    command.Parameters.AddWithValue("@Emotion", (object?)updatedEntry.Emotion ?? DBNull.Value);
 
     var rowsAffected = await command.ExecuteNonQueryAsync();
     return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
@@ -158,7 +164,7 @@ app.MapGet("/api/testdb/connection", () =>
     {
         return Results.Problem($"Dafuq DB failed: {ex.Message}");
     }
-    
+
 });
 
 app.Run();

@@ -34,7 +34,11 @@ export default function Journal({ userId }) {
         if (!res.ok) throw new Error("Failed to fetch entries");
         return res.json();
       })
-      .then(setEntries)
+      .then((data) => {
+        const filtered = data.filter(entry => entry.content !== "Mood check-in only.");
+        setEntries(filtered);
+      })
+
       .catch(err => console.error("Error fetching entries:", err));
   }, [userId]);
 

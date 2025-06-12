@@ -15,6 +15,7 @@ export default function Sidebar({ collapsed, toggleCollapsed }) {
                 <div className="space-y-4">
                     <a href="/" className="block hover:underline">Homepage</a>
                     <a href="/journal" className="block hover:underline">Journal</a>
+                    <a href="/mood" className="block hover:underline">Mood Meter</a>
                 </div>
             )}
         </div>
