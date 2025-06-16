@@ -23,6 +23,8 @@ export default function Journal({ userId }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   // Handle toggling expanded state for longerrrrr entries
   function toggleExpand(id) {
@@ -51,17 +53,19 @@ export default function Journal({ userId }) {
 
   // Delete a journal entry
   // Confirm deletion with user first
-  async function handleDelete(id) {
-    if (!window.confirm("Are you sure you want to delete this journal entry? This action cannot be undone.")) {
-      return;
-    }
+  async function confirmDelete() {
+
+    if (!deleteId) return;
     try {
-      const res = await fetch(`${API}/journalentries/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/journalentries/${deleteId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete entry");
-      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+      setEntries((prev) => prev.filter((entry) => entry.id !== deleteId));
     } catch (err) {
       console.error("Error deleting entry:", err);
       alert("Sorry, something went wrong while deleting your entry!");
+    } finally {
+      setShowDeleteConfirm(false);
+      setDeleteId(null);
     }
   }
 
@@ -178,6 +182,33 @@ export default function Journal({ userId }) {
             <p className="text-gray-400 italic">You haven’t written anything yet!!</p>
           ) : (
             <ul className="space-y-6">
+
+              {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
+                    <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+                    <p className="mb-6">Are you sure you want to delete this journal entry? This action cannot be undone.</p>
+                    <div className="flex justify-end gap-4">
+                      <button
+                        onClick={() => {
+                          setShowDeleteConfirm(false);
+                          setDeleteId(null);
+                        }}
+                        className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={confirmDelete}
+                        className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {entries.map(({ id, content, mood, date }) => {
                 const isExpanded = expandedId === id;
                 const showToggle = content.length > 200;
@@ -216,11 +247,15 @@ export default function Journal({ userId }) {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(id)}
+                        onClick={() => {
+                          setDeleteId(id);
+                          setShowDeleteConfirm(true);
+                        }}
                         className="text-red-500 hover:underline text-sm"
                       >
                         Delete
                       </button>
+
                     </div>
                   </li>
                 );
