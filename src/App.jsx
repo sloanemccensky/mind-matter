@@ -2,7 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Journal from "./pages/journal";
-import Sidebar from "./components/sidebar";
+import Nav from "./components/navhub";
 import Mood from "./pages/mood";
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
   return (
     <Router>
       <div className="flex w-screen h-screen">
-        <Sidebar collapsed={collapsed} toggleCollapsed={() => setCollapsed(!collapsed)} />
+        <Nav collapsed={collapsed} toggleCollapsed={() => setCollapsed(!collapsed)} />
         <div className="flex-1 w-screen overflow-y-auto bg-gray-100">
           <Routes>
             <Route path="/" element={<div>Homepage TBD</div>} />

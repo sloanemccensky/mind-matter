@@ -36,12 +36,12 @@ const getMoodCircleColor = (mood) => {
 
 // Gets the CSS class based on mood value for the card backgrounds
 function getMoodClass(mood) {
-  if (mood == null) return "bg-gradient-to-br from-gray-300 to-gray-500";
-  if (mood <= 2) return "bg-gradient-to-br from-red-300 to-red-500";
-  if (mood <= 4) return "bg-gradient-to-br from-yellow-300 to-yellow-500";
-  if (mood <= 6) return "bg-gradient-to-br from-blue-300 to-blue-500";
-  if (mood <= 8) return "bg-gradient-to-br from-green-300 to-green-500";
-  return "bg-gradient-to-br from-pink-300 to-pink-500";
+  if (mood == null) return "bg-gradient-to-br from-gray-400 to-gray-500";
+  if (mood <= 2) return "bg-gradient-to-br from-red-400 to-red-500";
+  if (mood <= 4) return "bg-gradient-to-br from-yellow-400 to-yellow-500";
+  if (mood <= 6) return "bg-gradient-to-br from-blue-400 to-blue-500";
+  if (mood <= 8) return "bg-gradient-to-br from-green-400 to-green-500";
+  return "bg-gradient-to-br from-pink-400 to-pink-500";
 }
 
 // Gets the dark background color class for emotion display
@@ -175,11 +175,11 @@ export default function Mood({ userId }) {
         setSelectedEmotions(prev => ({ ...prev, [key]: emotion }));
         setFeedback("Your mood has been updated. Thanks for checking in!");
       } else {
-        const res = await fetch(`${API}/journalentries", {
+        const res = await fetch(`${API}/journalentries`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(entryData),
-        }`);
+        });
         if (!res.ok) throw new Error("Failed to log mood!! :(");
         const saved = await res.json();
         setMoods(prev => [...prev, saved]);
@@ -225,16 +225,16 @@ export default function Mood({ userId }) {
   // Interface rendering + design
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-200 to-blue-50">
-      <header className="w-full text-center py-5 bg-gradient-to-b from-blue-300 via-blue-200 to-blue-300 shadow-md text-black-800 font-bold text-2xl tracking-wide">
+      <header className="w-full text-center py-5 bg-gradient-to-br from-blue-400 to-blue-500 shadow-md text-blue-950 font-bold text-2xl tracking-wide">
 
         <h1 className="text-3xl font-bold">Mood Meter</h1>
-        <p className="text-sm text-gray-600 mt-1">Track your mood and emotions throughout the week</p>
+        <p className="text-sm text-blue-100 mt-1">Track your mood and emotions throughout the week</p>
       </header>
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto mt-4 px-6 py-5 bg-gradient-to-b from-blue-300 via-blue-300 to-blue-300 rounded-2xl shadow-lg">
         <div className="mb-5 text-gray-600">
           Select a day to begin.
         </div>
-        <div className="relative flex items-center justify-between mb-5 bg-white p-3 rounded shadow">
+        <div className="relative flex items-center justify-between mb-5 bg-blue-50 p-3 rounded shadow">
           <button
             onClick={handlePrevWeek}
             className="px-3 py-1 rounded bg-indigo-100 hover:bg-gray-300 font-semibold transition shadow-md hover:shadow-lg z-10"
@@ -287,16 +287,11 @@ export default function Mood({ userId }) {
           </div>
         </div>
 
-        <div className="w-80 mx-auto text-lg text-gray-800 font-semibold rounded shadow-md hover:shadow-lg transition border mb-8 px-4 py-2.5 bg-white">
+        <div className="w-80 mx-auto text-lg text-gray-800 font-semibold rounded shadow-md hover:shadow-lg transition border mb-8 px-4 py-2.5 bg-blue-50">
           This Week's Average: <span className="font-bold">{averageMood}</span>
         </div>
 
         <div className="mb-6 p-6 rounded-xl bg-gradient-to-br from-indigo-100 via-blue-50 to-indigo-200 shadow-md">
-          <label className="block text-black mb-4 font-semibold text-lg text-center">
-            Capture how your heart is feeling today:
-          </label>
-
-          {/* Horizontal row centered */}
           <div className="flex items-center justify-center gap-4 mb-2">
             <label htmlFor="moodInput" className="mb-1 font-semibold text-indigo-600">Mood (1–10):</label>
             <input
