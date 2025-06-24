@@ -12,6 +12,128 @@ body {
   font-family: "DM Sans", sans-serif;
 }
 
+/* Styling for the gratitude calendar */
+
+.custom-calendar {
+  width: 100%;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  background-color: transparent;
+}
+
+.custom-calendar .react-calendar__tile {
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.custom-calendar .react-calendar__tile--active {
+  background-color: #67e8f9 !important;
+  color: #083344 !important;
+}
+
+.custom-calendar .react-calendar__tile:hover {
+  background-color: #bae6fd !important;
+  cursor: pointer;
+}
+
+.has-entry {
+  background-color: #a5f3fc !important;
+  font-weight: bold;
+  color: #064e3b !important;
+}
+
+/* Gratitude component */ 
+
+.gratitude-card {
+  background: #fffdf8;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(255, 143, 163, 0.1);
+  transition: transform 0.2s ease;
+  height: 250px;
+}
+
+.gratitude-card:hover {
+  transform: scale(1.02);
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #008fa5;
+  margin-bottom: 0.5rem;
+}
+
+.card-title.today {
+  color: #008fa5;
+  text-decoration: underline;
+}
+
+.gratitude-input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: 2px solid #00acc3;
+  background: #e1fbff;
+}
+
+.edit-btn {
+  margin-top: 85px;
+  background: #00acc3;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #005c87;
+}
+
+.save-btn {
+  background: #00a1c9;
+  cursor: pointer;
+  font-weight: bold;
+  color: #ffffff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  transition: background 0.2s ease;
+}
+
+.save-btn:hover {
+  background: #005c87;
+}
+
+.gratitude-line {
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+  text-align: left;
+}
+
+.gratitude-badge {
+  border: none;
+  cursor: default;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  margin-right: 25px;
+  border-radius: 20px;
+  color: #ffffff;
+  transition: background 0.2s ease;
+  background: #c096ff;
+  color: #f0fcff;
+  display: inline-block;
+}
+
+/* Mood component */
+
 .mood-score-circle {
   display: inline-flex;
   justify-content: center;

@@ -71,6 +71,28 @@ app.MapPost("/journalentries", async (JournalEntry entry, IConfiguration config)
     return Results.Created($"/journalentries/{newId}", new { Id = newId, entry.UserId, entry.Content, entry.Mood, Date = entryDate });
 });
 
+app.MapPost("/gratitude", async (GratitudeEntry entry, IConfiguration config) =>
+{
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand(@"
+        INSERT INTO GratitudeEntries (UserId, Date, Notice, Feeling) 
+        VALUES (@UserId, @Date, @Notice, @Feeling);
+        SELECT SCOPE_IDENTITY();", connection);
+
+    command.Parameters.AddWithValue("@UserId", entry.UserId);
+    command.Parameters.AddWithValue("@Date", entry.Date ?? DateTime.Now);
+    command.Parameters.AddWithValue("@Notice", entry.Notice ?? (object)DBNull.Value);
+    command.Parameters.AddWithValue("@Feeling", entry.Feeling ?? (object)DBNull.Value);
+
+    var result = await command.ExecuteScalarAsync();
+    return Results.Created($"/gratitude/{result}", new { Id = result });
+});
+
+
 // GET to retrieve all entries for a specific user
 app.MapGet("/journalentries", async (string userId, IConfiguration config) =>
 {
@@ -106,6 +128,35 @@ app.MapGet("/journalentries", async (string userId, IConfiguration config) =>
     return Results.Ok(results);
 
 });
+
+// GET to retrieve all gratitude entries for a specific user
+app.MapGet("/gratitude", async (string userId, IConfiguration config) =>
+{
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand("SELECT Id, UserId, Date, Notice, Feeling FROM GratitudeEntries WHERE UserId = @UserId", connection);
+    command.Parameters.AddWithValue("@UserId", userId);
+
+    var results = new List<GratitudeEntry>();
+    using var reader = await command.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        results.Add(new GratitudeEntry
+        {
+            Id = reader.GetInt32(0),
+            UserId = reader.GetString(1),
+            Date = reader.GetDateTime(2),
+            Notice = reader.IsDBNull(3) ? null : reader.GetString(3),
+            Feeling = reader.IsDBNull(4) ? null : reader.GetString(4)
+        });
+    }
+
+    return Results.Ok(results);
+});
+
 
 // DELETE to remove an entry by ID
 app.MapDelete("/journalentries/{id:int}", async (int id, IConfiguration config) =>
@@ -149,6 +200,30 @@ app.MapPut("/journalentries/{id:int}", async (int id, JournalEntry updatedEntry,
     return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
 
 });
+
+// PUT to update an existing gratitude entry by ID
+app.MapPut("/gratitude/{id:int}", async (int id, GratitudeEntry updatedEntry, IConfiguration config) =>
+{
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var query = @"
+        UPDATE GratitudeEntries
+        SET Notice = @Notice, Feeling = @Feeling
+        WHERE Id = @Id
+    ";
+
+    using var command = new SqlCommand(query, connection);
+    command.Parameters.AddWithValue("@Id", id);
+    command.Parameters.AddWithValue("@Notice", (object?)updatedEntry.Notice ?? DBNull.Value);
+    command.Parameters.AddWithValue("@Feeling", (object?)updatedEntry.Feeling ?? DBNull.Value);
+
+    var rowsAffected = await command.ExecuteNonQueryAsync();
+    return rowsAffected > 0 ? Results.Ok(new { message = "Successful :D!!" }) : Results.NotFound();
+});
+
 
 // GET to test database connection
 app.MapGet("/api/testdb/connection", () =>

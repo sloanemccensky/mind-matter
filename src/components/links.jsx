@@ -6,6 +6,7 @@ export default function Links() {
       <Link to="/" className="block hover:underline">Homepage</Link>
       <Link to="/journal" className="block hover:underline">Dear Diary</Link>
       <Link to="/mood" className="block hover:underline">Mood Meter</Link>
+      <Link to="/gratitude" className="block hover:underline">Gratitude Log</Link>
     </div>
   );
 }
