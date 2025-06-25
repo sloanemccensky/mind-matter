@@ -83,6 +83,17 @@ body {
   transform: scale(1.02);
 }
 
+.gratitude-card.expanded {
+  transform: scale(1.08);
+  max-width: 100%;
+  padding: 2rem;
+  box-shadow: 0 8px 20px rgba(0, 112, 112, 0.2);
+}
+
+.gratitude-card.expanded:hover {
+  transform: scale(1.02);
+}
+
 .card-title {
   font-weight: bold;
   font-size: 1.1rem;

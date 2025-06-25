@@ -13,6 +13,7 @@ const Gratitude = ({ userId }) => {
     const input = inputStates[formattedDate] || { notice: "", feeling: "" };
     const editing = editingStates[formattedDate];
     const isEntryToday = isToday(selectedDate);
+    const [justSubmitted, setJustSubmitted] = useState(false);
     const calendarClicka = (date) => {
         setSelectedDate(date);
     };
@@ -71,6 +72,8 @@ const Gratitude = ({ userId }) => {
                     ...prev,
                     [date]: { notice: infoDat.notice, feeling: infoDat.feeling },
                 }));
+                setJustSubmitted(true);
+                setTimeout(() => setJustSubmitted(false), 1500);
             } else {
                 console.error("Save failed!!! Call Sloane.");
             }
@@ -164,7 +167,7 @@ const Gratitude = ({ userId }) => {
                     </div>
 
                     <div className="flex justify-center">
-                        <div className="w-full mt-2 gratitude-card max-w-md">
+                        <div className={`w-full mt-2 gratitude-card max-w-md transition-all duration-500 ease-in-out ${justSubmitted ? "expanded" : ""}`}>
 
                             <h3 className={`card-title ${isEntryToday ? "today" : ""}`}>
                                 {isEntryToday ? "Today" : format(selectedDate, "EEEE")}
