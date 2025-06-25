@@ -117,14 +117,14 @@ const Gratitude = ({ userId }) => {
     return (
         <div className="w-full min-h-screen bg-gradient-to-b from-cyan-50 via-cyan-200 to-cyan-50 gratitude-log-container">
 
-            <header className="py-5 w-full text-center font-bold tracking-wide shadow-md bg-gradient-to-br from-cyan-400 to-cyan-500 text-cyan-800 text-2xl">
+            <header className="py-5 w-full text-center font-bold tracking-wide shadow-md bg-gradient-to-br from-cyan-500 to-cyan-600">
                 <h1 className="text-cyan-50 text-3xl font-bold">Gratitude Log</h1>
                 <p className="mt-1 text-sm text-cyan-50">Explore the beauty of smaller moments</p>
             </header>
 
-            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-100 flex flex-col lg:flex-row justify-center gap-6 px-4 mt-10 py-4 max-w-4xl mx-auto rounded-lg shadow-lg">
+            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-100 flex flex-col lg:flex-row justify-center items-stretch gap-6 px-4 mt-14 py-4 max-w-screen-lg mx-auto rounded-lg shadow-lg w-full h-auto">
 
-                <div className="bg-white rounded-lg shadow-md p-4">
+                <div className="bg-cyan-50 rounded-lg shadow-md p-4">
                     <Calendar
                         onChange={calendarClicka}
                         value={selectedDate}
@@ -135,15 +135,15 @@ const Gratitude = ({ userId }) => {
                         tileContent={({ date }) => {
                             const key = format(date, "yyyy-MM-dd");
                             return entries[key] ? (
-                                <div className="text-xs text-green-700 text-center">:3</div>
+                                <div className="beepemoji-marker">:3</div>
                             ) : null;
                         }}
                         className="custom-calendar"
                     />
                 </div>
 
-                <div className="w-full max-w-xl bg-cyan-400 rounded-lg shadow-lg px-6 py-6">
-                    <div className="flex justify-between items-center mb-6 py-4 px-4 bg-cyan-50 rounded-lg shadow-md">
+                <div className="w-full max-w-xl bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-lg shadow-lg px-6 py-6">
+                    <div className="flex justify-between items-center mb-4 py-4 px-4 bg-cyan-50 rounded-lg shadow-md">
                         <button
                             onClick={toPrevDay}
                             className="rounded px-4 py-2 font-semibold bg-cyan-300 hover:bg-slate-300 transition shadow"
@@ -172,9 +172,17 @@ const Gratitude = ({ userId }) => {
 
                             {entry && !editing ? (
                                 <div className="entry-content">
-                                    <p className="gratitude-line"><strong>I Noticed:</strong> {entry.notice}</p>
-                                    <p className="gratitude-line"><strong>I Felt:</strong> {entry.feeling}</p>
+
                                     <div className="gratitude-badge">Collected!</div>
+
+                                    <div className="gratitude-line-style">
+                                        <p className="gratitude-line-1"><strong>I Noticed:</strong> {entry.notice}</p>
+                                    </div>
+
+                                    <div className="gratitude-line-style">
+                                        <p className="gratitude-line-2"><strong>I Felt:</strong> {entry.feeling}</p>
+                                    </div>
+
                                     <button
                                         className="edit-btn"
                                         onClick={() =>
@@ -186,24 +194,32 @@ const Gratitude = ({ userId }) => {
                                 </div>
                             ) : (
                                 <div className="entry-form">
-                                    <input
-                                        className="gratitude-input"
-                                        type="text"
-                                        placeholder="Today I noticed..."
-                                        value={input.notice}
-                                        onChange={(e) =>
-                                            onInput(formattedDate, "notice", e.target.value)
-                                        }
-                                    />
-                                    <input
-                                        className="gratitude-input"
-                                        type="text"
-                                        placeholder="It made me feel..."
-                                        value={input.feeling}
-                                        onChange={(e) =>
-                                            onInput(formattedDate, "feeling", e.target.value)
-                                        }
-                                    />
+
+                                    <div className="input-wrapper">
+                                        <input
+                                            className="gratitude-input-1"
+                                            type="text"
+                                            maxLength={75}
+                                            placeholder="Today I noticed..."
+                                            value={input.notice}
+                                            onChange={(e) => onInput(formattedDate, "notice", e.target.value)}
+                                        />
+                                        <span className="char-pill">{(input.notice || "").length}/75</span>
+                                    </div>
+
+                                    <div className="input-wrapper">
+                                        <input
+                                            className="gratitude-input-2"
+                                            type="text"
+                                            maxLength={75}
+                                            placeholder="It made me feel..."
+                                            value={input.feeling}
+                                            onChange={(e) => onInput(formattedDate, "feeling", e.target.value)}
+                                        />
+                                        <span className="char-pill">{(input.feeling || "").length}/75</span>
+                                    </div>
+
+
                                     <button
                                         className="save-btn"
                                         onClick={() => save(formattedDate)}

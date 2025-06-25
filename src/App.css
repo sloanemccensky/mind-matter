@@ -43,7 +43,32 @@ body {
   color: #064e3b !important;
 }
 
-/* Gratitude component */ 
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.2rem;
+  gap: 1rem;
+}
+
+/* ... I love this little thing */
+.beepemoji-marker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
+  border-radius: 9999px;
+  background-color: #cffafe;
+  color: #083648;
+  font-size: 0.75rem;
+  font-weight: bold;
+  transform: rotate(92deg);
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Gratitude component */
 
 .gratitude-card {
   background: #fffdf8;
@@ -51,7 +76,7 @@ body {
   padding: 1rem;
   box-shadow: 0 4px 8px rgba(255, 143, 163, 0.1);
   transition: transform 0.2s ease;
-  height: 250px;
+  position: relative;
 }
 
 .gratitude-card:hover {
@@ -70,19 +95,23 @@ body {
   text-decoration: underline;
 }
 
-.gratitude-input {
+.gratitude-input-1,
+.gratitude-input-2 {
   display: block;
   width: 100%;
   padding: 0.5rem;
   margin-top: 20px;
-  margin-bottom: 20px;
   border-radius: 12px;
   border: 2px solid #00acc3;
   background: #e1fbff;
 }
 
+.gratitude-input-2 {
+  margin-top: 3rem;
+}
+
 .edit-btn {
-  margin-top: 85px;
+  margin-top: 0.5rem;
   background: #00acc3;
   border: none;
   padding: 0.5rem 1rem;
@@ -101,6 +130,7 @@ body {
   background: #00a1c9;
   cursor: pointer;
   font-weight: bold;
+  margin-top: 1rem;
   color: #ffffff;
   border: none;
   padding: 0.5rem 1rem;
@@ -112,24 +142,80 @@ body {
   background: #005c87;
 }
 
-.gratitude-line {
-  font-size: 0.95rem;
-  margin-bottom: 0.3rem;
+.input-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.char-pill {
+  position: absolute;
+  bottom: -1.75rem;
+  right: 0.75rem;
+  background-color: #cffafe;
+  color: #036672;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.gratitude-line-1 {
+  margin-bottom: 3rem;
+}
+
+.gratitude-line-2 {
+  margin-bottom: 0.5rem;
+}
+
+.gratitude-line-1,
+.gratitude-line-2 {
+  font-size: 1.1rem;
   text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.gratitude-line-style {
+  background-color: #bbf7ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .gratitude-badge {
-  border: none;
-  cursor: default;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  margin-right: 25px;
-  border-radius: 20px;
-  color: #ffffff;
-  transition: background 0.2s ease;
+  position: absolute;
+  top: -10px;
+  right: -10px;
   background: #c096ff;
   color: #f0fcff;
-  display: inline-block;
+  font-weight: bold;
+  padding: 0.4rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  animation: popIn 0.4s ease-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 }
 
 /* Mood component */
@@ -150,14 +236,27 @@ body {
 }
 
 @keyframes wobble {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(1deg); }
-  50% { transform: rotate(-1deg); }
-  75% { transform: rotate(1deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(1deg);
+  }
+
+  50% {
+    transform: rotate(-1deg);
+  }
+
+  75% {
+    transform: rotate(1deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .wobble:hover {
   animation: wobble 0.3s ease-in-out;
 }
-  
