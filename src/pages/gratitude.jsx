@@ -122,7 +122,7 @@ const Gratitude = ({ userId }) => {
                 <p className="mt-1 text-sm text-cyan-50">Explore the beauty of smaller moments</p>
             </header>
 
-            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-100 flex flex-col lg:flex-row justify-center items-stretch gap-6 px-4 mt-10 py-4 max-w-screen-lg mx-auto rounded-lg shadow-lg w-full h-auto">
+            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-100 flex flex-col lg:flex-row justify-center items-stretch gap-6 px-4 mt-8 py-4 max-w-screen-lg mx-auto rounded-lg shadow-lg w-full h-auto">
 
                 <div className="bg-cyan-50 rounded-lg shadow-md p-4">
                     <Calendar
