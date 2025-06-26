@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { format, addDays, subDays, isToday } from "date-fns";
+import { format, addDays, subDays, isToday, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
@@ -13,7 +13,15 @@ const Gratitude = ({ userId }) => {
     const input = inputStates[formattedDate] || { notice: "", feeling: "" };
     const editing = editingStates[formattedDate];
     const isEntryToday = isToday(selectedDate);
-    const [submittedDates, setSubmittedDates] = useState({});
+    const [isTypingDone, setIsTypingDone] = useState(false);
+    const startOfSelectedMonth = startOfMonth(selectedDate);
+    const endOfSelectedMonth = endOfMonth(selectedDate);
+
+    useEffect(() => {
+        // Reset when the date changes
+        setIsTypingDone(false);
+    }, [selectedDate]);
+
     const calendarClicka = (date) => {
         setSelectedDate(date);
     };
@@ -72,7 +80,6 @@ const Gratitude = ({ userId }) => {
                     ...prev,
                     [date]: { notice: infoDat.notice, feeling: infoDat.feeling },
                 }));
-                setSubmittedDates((prev) => ({ ...prev, [date]: true }));
             } else {
                 console.error("Save failed!!! Call Sloane.");
             }
@@ -81,6 +88,18 @@ const Gratitude = ({ userId }) => {
         }
 
     };
+
+    const allDaysInMonth = eachDayOfInterval({
+        start: startOfSelectedMonth,
+        end: endOfSelectedMonth,
+    });
+
+    const loggedDaysCount = allDaysInMonth.filter((day) => {
+        const key = format(day, "yyyy-MM-dd");
+        return entries[key];
+    }).length;
+
+    const filledPercentage = Math.round((loggedDaysCount / allDaysInMonth.length) * 100);
 
     // GO FISH my deelizzus entries from the API
     useEffect(() => {
@@ -124,9 +143,28 @@ const Gratitude = ({ userId }) => {
                 <p className="mt-1 text-sm text-cyan-50">Explore the beauty of smaller moments</p>
             </header>
 
-            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-100 flex flex-col lg:flex-row justify-center items-stretch gap-6 px-4 mt-6 py-4 max-w-screen-lg mx-auto rounded-lg shadow-lg w-full h-auto">
+            <div className="mt-2 py-3 px-6 text-center">
+                <div className="flex flex-col items-center gap-1">
+                    <div className="text-cyan-900 font-semibold text-sm">
+                        Gratitude Level – {loggedDaysCount}/{allDaysInMonth.length} days logged
+                    </div>
+                    <div className="w-full max-w-xs h-4 bg-cyan-200 rounded-full overflow-hidden shadow-inner">
+                        <div
+                            className={`h-full transition-all duration-500 ${filledPercentage >= 75 ? "bg-emerald-400" : "bg-yellow-300"}`}
+                            style={{ width: `${Math.min(filledPercentage, 100)}%` }}
+                        ></div>
+                    </div>
+                    {filledPercentage >= 75 && (
+                        <div className="text-cyan-600 font-bold text-sm mt-1">
+                            Monthly Goal Achieved!
+                        </div>
+                    )}
+                </div>
+            </div>
 
-                <div className="bg-cyan-50 rounded-lg shadow-md p-4">
+            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-300 flex flex-col lg:flex-row justify-center items-stretch gap-6 px-4 mt-2 py-4 mb-4 max-w-screen-lg mx-auto rounded-lg shadow-lg w-full h-auto">
+
+                <div className="calendar-wrap self-stretch bg-cyan-50 rounded-lg shadow-md p-4 flex items-center justify-center">
                     <Calendar
                         onChange={calendarClicka}
                         value={selectedDate}
@@ -166,9 +204,9 @@ const Gratitude = ({ userId }) => {
                     </div>
 
                     <div className="flex justify-center">
-                        <div className={`w-full mt-2 gratitude-card max-w-md transition-all duration-500 ease-in-out ${submittedDates[formattedDate] ? "expanded" : ""}`}>
+                        <div className={`w-full mt-2 gratitude-card max-w-md transition-all duration-300 ease-in-out ${entry ? "filled-entry" : ""}`}>
 
-                            <h3 className={`card-title ${isEntryToday ? "today" : ""}`}>
+                            <h3 className={`card-title ${isEntryToday ? "today" : ""} ${isTypingDone ? "typing-done" : ""}`} onAnimationEnd={() => setIsTypingDone(true)}>
                                 {isEntryToday ? "Today" : format(selectedDate, "EEEE")}
                             </h3>
 
@@ -185,19 +223,7 @@ const Gratitude = ({ userId }) => {
                                         <p className="gratitude-line-2"><strong>I Felt:</strong> {entry.feeling}</p>
                                     </div>
 
-                                    <button
-                                        className="edit-btn"
-                                        onClick={() => {
-                                            setEditingStates((prev) => ({ ...prev, [formattedDate]: true }));
-                                            setSubmittedDates((prev) => {
-                                                const updated = { ...prev };
-                                                delete updated[formattedDate];
-                                                return updated;
-                                            });
-                                        }}
-
-
-                                    >
+                                    <button className="edit-btn" onClick={() => { setEditingStates((prev) => ({ ...prev, [formattedDate]: true })); }}>
                                         Edit
                                     </button>
                                 </div>
@@ -241,6 +267,7 @@ const Gratitude = ({ userId }) => {
                     </div>
                 </div>
             </div>
+            <div className="h-10"></div>
         </div>
     );
 };
