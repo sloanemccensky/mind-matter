@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { format, addDays, subDays, isToday } from "date-fns";
+import { format, addDays, subDays, isToday, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
@@ -13,6 +13,15 @@ const Gratitude = ({ userId }) => {
     const input = inputStates[formattedDate] || { notice: "", feeling: "" };
     const editing = editingStates[formattedDate];
     const isEntryToday = isToday(selectedDate);
+    const [isTypingDone, setIsTypingDone] = useState(false);
+    const startOfSelectedMonth = startOfMonth(selectedDate);
+    const endOfSelectedMonth = endOfMonth(selectedDate);
+
+    useEffect(() => {
+        // Reset when the date changes
+        setIsTypingDone(false);
+    }, [selectedDate]);
+
     const calendarClicka = (date) => {
         setSelectedDate(date);
     };
@@ -80,6 +89,18 @@ const Gratitude = ({ userId }) => {
 
     };
 
+    const allDaysInMonth = eachDayOfInterval({
+        start: startOfSelectedMonth,
+        end: endOfSelectedMonth,
+    });
+
+    const loggedDaysCount = allDaysInMonth.filter((day) => {
+        const key = format(day, "yyyy-MM-dd");
+        return entries[key];
+    }).length;
+
+    const filledPercentage = Math.round((loggedDaysCount / allDaysInMonth.length) * 100);
+
     // GO FISH my deelizzus entries from the API
     useEffect(() => {
         const fetchEntries = async () => {
@@ -117,14 +138,33 @@ const Gratitude = ({ userId }) => {
     return (
         <div className="w-full min-h-screen bg-gradient-to-b from-cyan-50 via-cyan-200 to-cyan-50 gratitude-log-container">
 
-            <header className="py-5 w-full text-center font-bold tracking-wide shadow-md bg-gradient-to-br from-cyan-400 to-cyan-500 text-cyan-800 text-2xl">
+            <header className="py-5 w-full text-center font-bold tracking-wide shadow-md bg-gradient-to-br from-cyan-500 to-cyan-600">
                 <h1 className="text-cyan-50 text-3xl font-bold">Gratitude Log</h1>
                 <p className="mt-1 text-sm text-cyan-50">Explore the beauty of smaller moments</p>
             </header>
 
-            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-100 flex flex-col lg:flex-row justify-center gap-6 px-4 mt-10 py-4 max-w-4xl mx-auto rounded-lg shadow-lg">
+            <div className="mt-2 py-3 px-6 text-center">
+                <div className="flex flex-col items-center gap-1">
+                    <div className="text-cyan-900 font-semibold text-sm">
+                        Gratitude Level – {loggedDaysCount}/{allDaysInMonth.length} days logged
+                    </div>
+                    <div className="w-full max-w-xs h-4 bg-cyan-200 rounded-full overflow-hidden shadow-inner">
+                        <div
+                            className={`h-full transition-all duration-500 ${filledPercentage >= 75 ? "bg-emerald-400" : "bg-yellow-300"}`}
+                            style={{ width: `${Math.min(filledPercentage, 100)}%` }}
+                        ></div>
+                    </div>
+                    {filledPercentage >= 75 && (
+                        <div className="text-cyan-600 font-bold text-sm mt-1">
+                            Monthly Goal Achieved!
+                        </div>
+                    )}
+                </div>
+            </div>
 
-                <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-300 flex flex-col lg:flex-row justify-center items-stretch gap-6 px-4 mt-2 py-4 mb-4 max-w-screen-lg mx-auto rounded-lg shadow-lg w-full h-auto">
+
+                <div className="calendar-wrap self-stretch bg-cyan-50 rounded-lg shadow-md p-4 flex items-center justify-center">
                     <Calendar
                         onChange={calendarClicka}
                         value={selectedDate}
@@ -135,15 +175,15 @@ const Gratitude = ({ userId }) => {
                         tileContent={({ date }) => {
                             const key = format(date, "yyyy-MM-dd");
                             return entries[key] ? (
-                                <div className="text-xs text-green-700 text-center">:3</div>
+                                <div className="beepemoji-marker">:3</div>
                             ) : null;
                         }}
                         className="custom-calendar"
                     />
                 </div>
 
-                <div className="w-full max-w-xl bg-cyan-400 rounded-lg shadow-lg px-6 py-6">
-                    <div className="flex justify-between items-center mb-6 py-4 px-4 bg-cyan-50 rounded-lg shadow-md">
+                <div className="w-full max-w-xl bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-lg shadow-lg px-6 py-6">
+                    <div className="flex justify-between items-center mb-4 py-4 px-4 bg-cyan-50 rounded-lg shadow-md">
                         <button
                             onClick={toPrevDay}
                             className="rounded px-4 py-2 font-semibold bg-cyan-300 hover:bg-slate-300 transition shadow"
@@ -164,46 +204,57 @@ const Gratitude = ({ userId }) => {
                     </div>
 
                     <div className="flex justify-center">
-                        <div className="w-full mt-2 gratitude-card max-w-md">
+                        <div className={`w-full mt-2 gratitude-card max-w-md transition-all duration-300 ease-in-out ${entry ? "filled-entry" : ""}`}>
 
-                            <h3 className={`card-title ${isEntryToday ? "today" : ""}`}>
+                            <h3 className={`card-title ${isEntryToday ? "today" : ""} ${isTypingDone ? "typing-done" : ""}`} onAnimationEnd={() => setIsTypingDone(true)}>
                                 {isEntryToday ? "Today" : format(selectedDate, "EEEE")}
                             </h3>
 
                             {entry && !editing ? (
                                 <div className="entry-content">
-                                    <p className="gratitude-line"><strong>I Noticed:</strong> {entry.notice}</p>
-                                    <p className="gratitude-line"><strong>I Felt:</strong> {entry.feeling}</p>
+
                                     <div className="gratitude-badge">Collected!</div>
-                                    <button
-                                        className="edit-btn"
-                                        onClick={() =>
-                                            setEditingStates((prev) => ({ ...prev, [formattedDate]: true }))
-                                        }
-                                    >
+
+                                    <div className="gratitude-line-style">
+                                        <p className="gratitude-line-1"><strong>I Noticed:</strong> {entry.notice}</p>
+                                    </div>
+
+                                    <div className="gratitude-line-style">
+                                        <p className="gratitude-line-2"><strong>I Felt:</strong> {entry.feeling}</p>
+                                    </div>
+
+                                    <button className="edit-btn" onClick={() => { setEditingStates((prev) => ({ ...prev, [formattedDate]: true })); }}>
                                         Edit
                                     </button>
                                 </div>
                             ) : (
                                 <div className="entry-form">
-                                    <input
-                                        className="gratitude-input"
-                                        type="text"
-                                        placeholder="Today I noticed..."
-                                        value={input.notice}
-                                        onChange={(e) =>
-                                            onInput(formattedDate, "notice", e.target.value)
-                                        }
-                                    />
-                                    <input
-                                        className="gratitude-input"
-                                        type="text"
-                                        placeholder="It made me feel..."
-                                        value={input.feeling}
-                                        onChange={(e) =>
-                                            onInput(formattedDate, "feeling", e.target.value)
-                                        }
-                                    />
+
+                                    <div className="input-wrapper">
+                                        <input
+                                            className="gratitude-input-1"
+                                            type="text"
+                                            maxLength={75}
+                                            placeholder="Today I noticed..."
+                                            value={input.notice}
+                                            onChange={(e) => onInput(formattedDate, "notice", e.target.value)}
+                                        />
+                                        <span className="char-pill">{(input.notice || "").length}/75</span>
+                                    </div>
+
+                                    <div className="input-wrapper">
+                                        <input
+                                            className="gratitude-input-2"
+                                            type="text"
+                                            maxLength={75}
+                                            placeholder="It made me feel..."
+                                            value={input.feeling}
+                                            onChange={(e) => onInput(formattedDate, "feeling", e.target.value)}
+                                        />
+                                        <span className="char-pill">{(input.feeling || "").length}/75</span>
+                                    </div>
+
+
                                     <button
                                         className="save-btn"
                                         onClick={() => save(formattedDate)}
@@ -216,6 +267,7 @@ const Gratitude = ({ userId }) => {
                     </div>
                 </div>
             </div>
+            <div className="h-10"></div>
         </div>
     );
 };
