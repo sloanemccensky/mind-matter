@@ -2,8 +2,9 @@ import { useState } from 'react'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Journal from "./pages/journal";
-import Nav from "./components/navhub";
+import Nav from "./components/nav";
 import Mood from "./pages/mood";
+import Gratitude from "./pages/gratitude";
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<div>Homepage TBD</div>} />
             <Route path="/journal" element={<Journal userId={currentUserId} />} />
             <Route path="/mood" element={<Mood userId={currentUserId} />} />
+            <Route path="/gratitude" element={<Gratitude userId={currentUserId} />} />
           </Routes>
         </div>
       </div>

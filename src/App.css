@@ -12,30 +12,325 @@ body {
   font-family: "DM Sans", sans-serif;
 }
 
-.mood-score-circle {
-  display: inline-flex;
+/* Styling for the gratitude calendar */
+
+.custom-calendar {
+  width: 100%;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  background-color: transparent;
+}
+
+.custom-calendar .react-calendar__tile {
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.custom-calendar .react-calendar__tile--active {
+  background-color: #67e8f9 !important;
+  color: #083344 !important;
+}
+
+.custom-calendar .react-calendar__tile:hover {
+  background-color: #bae6fd !important;
+  cursor: pointer;
+}
+
+.has-entry {
+  background-color: #a5f3fc !important;
+  font-weight: bold;
+  color: #064e3b !important;
+}
+
+.has-entry:hover {
+  box-shadow: 0 0 6px #a5f3fc;
+  transform: scale(1.02);
+  transition: 0.2s ease;
+}
+
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.2rem;
+  gap: 1rem;
+}
+
+/* Gratitude component */
+
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.2rem;
+  gap: 1rem;
+}
+
+/* ... I love this little thing */
+.beepemoji-marker {
+  display: flex;
   justify-content: center;
   align-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
+  border-radius: 9999px;
+  background-color: #cffafe;
+  color: #083648;
+  font-size: 0.75rem;
+  font-weight: bold;
+  transform: rotate(92deg);
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-wrapper {
+  align-self: center; /* ensure it stays vertically centered if needed */
+}
+
+.gratitude-card {
+  background: #fffdf8;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(255, 143, 163, 0.1);
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.gratitude-card:hover {
+  transform: scale(1.02);
+}
+
+.gratitude-card.filled-entry {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 112, 112, 0.2);
+}
+
+.gratitude-card.filled-entry:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 112, 112, 0.2);
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #008fa5;
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid #008fa5;
+  animation: typing 1.5s steps(20, end), blink 0.75s step-end infinite;
+}
+
+.typing-done {
+  border-right: none;
+  animation: none;
+}
+
+/* Typing animation for the card title */
+@keyframes typing {
+  from {
+    width: 0
+  }
+
+  to {
+    width: 100%
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent
+  }
+}
+
+.card-title.today {
+  color: #008fa5;
+  text-decoration: underline;
+}
+
+.gratitude-input-1,
+.gratitude-input-2 {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 20px;
+  border-radius: 12px;
+  border: 2px solid #00acc3;
+  background: #e1fbff;
+}
+
+.gratitude-input-2 {
+  margin-top: 3rem;
+}
+
+.edit-btn {
+  margin-top: 0.5rem;
+  background: #00acc3;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #005c87;
+}
+
+.save-btn {
+  background: #00a1c9;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 1rem;
+  color: #ffffff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  transition: background 0.2s ease;
+}
+
+@keyframes button-boop {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.save-btn:active {
+  animation: button-boop 0.2s ease;
+}
+
+.save-btn:hover {
+  background: #005c87;
+}
+
+.input-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.char-pill {
+  position: absolute;
+  bottom: -1.75rem;
+  right: 0.75rem;
+  background-color: #cffafe;
+  color: #036672;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.gratitude-line-1 {
+  margin-bottom: 3rem;
+}
+
+.gratitude-line-2 {
+  margin-bottom: 0.5rem;
+}
+
+.gratitude-line-1,
+.gratitude-line-2 {
+  font-size: 1.1rem;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.gratitude-line-style {
+  background-color: #bbf7ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.gratitude-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #c096ff;
+  color: #f0fcff;
+  font-weight: bold;
+  padding: 0.4rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  animation: popIn 0.4s ease-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+/* Mood component */
+
+.mood-score-circle {
+  display: inline-flex;
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4px;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
   background-color: white;
   color: #333;
   font-weight: 600;
   font-size: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  margin-top: 4px;
 }
 
 @keyframes wobble {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(1deg); }
-  50% { transform: rotate(-1deg); }
-  75% { transform: rotate(1deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(1deg);
+  }
+
+  50% {
+    transform: rotate(-1deg);
+  }
+
+  75% {
+    transform: rotate(1deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .wobble:hover {
   animation: wobble 0.3s ease-in-out;
 }
-  
