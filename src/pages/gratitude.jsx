@@ -172,17 +172,11 @@ const Gratitude = ({ userId }) => {
                             const key = format(date, "yyyy-MM-dd");
                             return entries[key] ? "has-entry" : "";
                         }}
-                        tileContent={({ date }) => {
-                            const key = format(date, "yyyy-MM-dd");
-                            return entries[key] ? (
-                                <div className="beepemoji-marker">:3</div>
-                            ) : null;
-                        }}
                         className="custom-calendar"
                     />
                 </div>
 
-                <div className="w-full max-w-xl bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-lg shadow-lg px-6 py-6">
+                <div className="w-full max-w-xl bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-lg shadow-lg px-6 py-6 flex flex-col justify-between">
                     <div className="flex justify-between items-center mb-4 py-4 px-4 bg-cyan-50 rounded-lg shadow-md">
                         <button
                             onClick={toPrevDay}
@@ -203,8 +197,9 @@ const Gratitude = ({ userId }) => {
                         </button>
                     </div>
 
-                    <div className="flex justify-center">
-                        <div className={`w-full mt-2 gratitude-card max-w-md transition-all duration-300 ease-in-out ${entry ? "filled-entry" : ""}`}>
+                    <div className="flex-1 flex items-center justify-center mt-4">
+                        <div className={`w-full h-full flex flex-col justify-between gratitude-card max-w-md transition-all duration-300 ease-in-out ${entry ? "filled-entry" : ""}`}>
+
 
                             <h3 className={`card-title ${isEntryToday ? "today" : ""} ${isTypingDone ? "typing-done" : ""}`} onAnimationEnd={() => setIsTypingDone(true)}>
                                 {isEntryToday ? "Today" : format(selectedDate, "EEEE")}
