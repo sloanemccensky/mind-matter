@@ -144,12 +144,9 @@ TBD
 ## Feature Implementation Progress
 
 - [x] Journal component
-      - [ ] Create entries
-      - [ ] Edit entries
-      - [ ] Delete entries
-      - [ ] Prompt generator
-          - [ ] AI-generated prompts
-      - [ ] 
+- [x] Mood tracker
+- [x] Gratitude log
+- [ ] Achievement / self-actualization tracker
 
 
 
@@ -174,7 +171,7 @@ Sloane McCensky
 * smccensky@ceiamerica.com
 * sloanemccensky@gmail.com
 
-Project Link: [https://github.com/sloanemccensky/CEI-hustlavision]
+Project Link: [https://github.com/sloanemccensky/mind-matter]
 
 
 
