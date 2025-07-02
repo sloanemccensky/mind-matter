@@ -225,7 +225,7 @@ export default function Mood({ userId }) {
   // Interface rendering + design
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-200 to-blue-50">
-      <header className="w-full text-center py-5 bg-gradient-to-br from-blue-400 to-blue-500 shadow-md text-blue-950 font-bold text-2xl tracking-wide">
+      <header className="w-full text-center py-5 bg-gradient-to-br from-blue-400 to-blue-500 shadow-md text-blue-950 font-bold tracking-wide">
         <h1 className="text-3xl font-bold text-blue-50">Mood Meter</h1>
         <p className="text-sm text-blue-100 mt-1">Track your mood and emotions throughout the week</p>
       </header>

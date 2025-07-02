@@ -5,6 +5,7 @@ import Journal from "./pages/journal";
 import Nav from "./components/nav";
 import Mood from "./pages/mood";
 import Gratitude from "./pages/gratitude";
+import Evidence from "./pages/evidence";
 
 function App() {
 
@@ -23,6 +24,7 @@ function App() {
             <Route path="/journal" element={<Journal userId={currentUserId} />} />
             <Route path="/mood" element={<Mood userId={currentUserId} />} />
             <Route path="/gratitude" element={<Gratitude userId={currentUserId} />} />
+            <Route path="/evidence" element={<Evidence userId={currentUserId} />} />
           </Routes>
         </div>
       </div>

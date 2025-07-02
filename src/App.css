@@ -98,9 +98,6 @@ body {
   font-size: 1.1rem;
   color: #008fa5;
   margin-bottom: 1rem;
-}
-
-.card-title {
   overflow: hidden;
   white-space: nowrap;
   border-right: 2px solid #008fa5;

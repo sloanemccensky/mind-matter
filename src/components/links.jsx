@@ -7,6 +7,7 @@ export default function Links() {
       <Link to="/journal" className="block hover:underline">Dear Diary</Link>
       <Link to="/mood" className="block hover:underline">Mood Meter</Link>
       <Link to="/gratitude" className="block hover:underline">Gratitude Log</Link>
+      <Link to="/evidence" className="block hover:underline">Self-Evidence Board</Link>
     </div>
   );
 }
