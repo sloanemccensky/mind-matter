@@ -25,6 +25,11 @@ export default function Journal({ userId }) {
   const [expandedId, setExpandedId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredEntries = entries.filter(entry =>
+    entry.content.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
 
   // Handle toggling expanded state for longerrrrr entries
   function toggleExpand(id) {
@@ -177,10 +182,20 @@ export default function Journal({ userId }) {
         )}
 
         <section>
+          <div className="items-center mt-8 flex justify-between gap-4">
+            <input
+              type="text"
+              placeholder="Search entries..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 rounded-full border border-rose-300 bg-rose-50 text-gray-800 shadow-md focus:outline-none focus:ring-2 focus:ring-rose-400"
+            />
+          </div>
           <h2 className="text-2xl font-bold mt-10 mb-6 text-rose-50 p-3 bg-gradient-to-br from-rose-400 to-rose-600 rounded-2xl">Previous Entries</h2>
-          {entries.length === 0 ? (
-            <p className="text-gray-400 italic">You haven’t written anything yet!!</p>
+          {filteredEntries.length === 0 ? (
+            <p className="text-gray-400 italic">No matching entries found!</p>
           ) : (
+
             <ul className="space-y-6">
 
               {showDeleteConfirm && (
@@ -209,7 +224,7 @@ export default function Journal({ userId }) {
                 </div>
               )}
 
-              {entries.map(({ id, content, mood, date }) => {
+              {filteredEntries.map(({ id, content, mood, date }) => {
                 const isExpanded = expandedId === id;
                 const showToggle = content.length > 200;
                 return (
