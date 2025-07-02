@@ -30,7 +30,6 @@ export default function Journal({ userId }) {
     entry.content.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
   // Handle toggling expanded state for longerrrrr entries
   function toggleExpand(id) {
     setExpandedId(expandedId === id ? null : id);
@@ -123,7 +122,7 @@ export default function Journal({ userId }) {
   return (
     <div className="bg-gradient-to-br from-rose-100 via-pink-100 to-rose-300 min-h-screen">
       <div>
-        <header className="w-full text-center py-5 bg-gradient-to-br from-rose-400 to-rose-500 shadow-md text-rose-800 font-bold text-2xl tracking-wide">
+        <header className="w-full text-center py-5 bg-gradient-to-br from-rose-400 to-rose-500 shadow-md text-rose-800 font-bold tracking-wide">
           <h1 className="text-3xl font-bold text-rose-50">Dear Diary</h1>
           <p className="text-sm text-rose-50 mt-1">Explore yourself with a personal journal</p>
         </header>

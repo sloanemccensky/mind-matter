@@ -71,6 +71,7 @@ app.MapPost("/journalentries", async (JournalEntry entry, IConfiguration config)
     return Results.Created($"/journalentries/{newId}", new { Id = newId, entry.UserId, entry.Content, entry.Mood, Date = entryDate });
 });
 
+// POST for gratitude log submissions
 app.MapPost("/gratitude", async (GratitudeEntry entry, IConfiguration config) =>
 {
     var connectionString = config.GetConnectionString("DefaultConnection");
@@ -92,6 +93,38 @@ app.MapPost("/gratitude", async (GratitudeEntry entry, IConfiguration config) =>
     return Results.Created($"/gratitude/{result}", new { Id = result });
 });
 
+// POST for self-evidence reporting
+app.MapPost("/evidence", async (EvidenceEntry entry, IConfiguration config) =>
+{
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand(@"
+        INSERT INTO EvidenceEntries (UserId, Date, Type, Description, ImageUrl, IsFavorite)
+        VALUES (@UserId, @Date, @Type, @Description, @ImageUrl, @IsFavorite);
+        SELECT SCOPE_IDENTITY();", connection);
+
+    command.Parameters.AddWithValue("@UserId", entry.UserId);
+    command.Parameters.AddWithValue("@Date", entry.Date);
+    command.Parameters.AddWithValue("@Type", entry.Type ?? (object)DBNull.Value);
+    command.Parameters.AddWithValue("@Description", entry.Description ?? (object)DBNull.Value);
+    command.Parameters.AddWithValue("@ImageUrl", entry.ImageUrl ?? (object)DBNull.Value);
+    command.Parameters.AddWithValue("@IsFavorite", entry.IsFavorite);
+
+    var result = await command.ExecuteScalarAsync();
+    return Results.Created($"/evidence/{result}", new
+    {
+        Id = result,
+        entry.UserId,
+        entry.Date,
+        entry.Type,
+        entry.Description,
+        entry.ImageUrl,
+        entry.IsFavorite
+    });
+});
 
 // GET to retrieve all entries for a specific user
 app.MapGet("/journalentries", async (string userId, IConfiguration config) =>
@@ -157,6 +190,39 @@ app.MapGet("/gratitude", async (string userId, IConfiguration config) =>
     return Results.Ok(results);
 });
 
+// GET to retrieve all self-evidence entries for a specific user
+app.MapGet("/evidence", async (string userId, IConfiguration config) =>
+{
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand(@"
+        SELECT Id, UserId, Date, Type, Description, ImageUrl, IsFavorite
+        FROM EvidenceEntries WHERE UserId = @UserId
+        ORDER BY Date DESC", connection);
+
+    command.Parameters.AddWithValue("@UserId", userId);
+
+    var results = new List<EvidenceEntry>();
+    using var reader = await command.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        results.Add(new EvidenceEntry
+        {
+            Id = reader.GetInt32(0),
+            UserId = reader.GetString(1),
+            Date = reader.GetDateTime(2),
+            Type = reader.GetString(3),
+            Description = reader.GetString(4),
+            ImageUrl = reader.IsDBNull(5) ? null : reader.GetString(5),
+            IsFavorite = reader.GetBoolean(6)
+        });
+    }
+
+    return Results.Ok(results);
+});
 
 // DELETE to remove an entry by ID
 app.MapDelete("/journalentries/{id:int}", async (int id, IConfiguration config) =>
@@ -174,6 +240,8 @@ app.MapDelete("/journalentries/{id:int}", async (int id, IConfiguration config) 
     return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
 
 });
+
+// MAKE DELETE FOR SELF-EVIDENCE PAGE HERE !!!
 
 // PUT to update an existing entry by ID
 app.MapPut("/journalentries/{id:int}", async (int id, JournalEntry updatedEntry, IConfiguration config) =>
@@ -224,6 +292,9 @@ app.MapPut("/gratitude/{id:int}", async (int id, GratitudeEntry updatedEntry, IC
     return rowsAffected > 0 ? Results.Ok(new { message = "Successful :D!!" }) : Results.NotFound();
 });
 
+// MAKE PUT FOR SELF-EVIDENCE HERE !!!
+
+/* TESTING */
 
 // GET to test database connection
 app.MapGet("/api/testdb/connection", () =>
