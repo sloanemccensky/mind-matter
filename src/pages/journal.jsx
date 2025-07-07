@@ -71,12 +71,14 @@ export default function Journal({ userId }) {
       setShowDeleteConfirm(false);
       setDeleteId(null);
     }
+
   }
 
   // Save or update the journal entry
   // If editing, update the existing entry
   // Otherwise, create a new one
-  async function handleSave() {
+  async function saveEntry() {
+
     if (!entry.trim()) return;
     const entryData = {
       userId: userId,
@@ -84,50 +86,65 @@ export default function Journal({ userId }) {
       mood: mood || 5,
       date: new Date().toISOString()
     };
+
     try {
+
       let res;
       if (isEditing) {
+
         res = await fetch(`${API}/journalentries/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(entryData),
         });
+
         if (!res.ok) throw new Error("update fail");
         setEntries((prev) =>
           prev.map((e) => e.id === editingId ? { ...e, ...entryData, date: e.date } : e)
         );
+
       } else {
+
         res = await fetch(`${API}/journalentries`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(entryData),
         });
+
         if (!res.ok) throw new Error("save fail");
         const saved = await res.json();
         setEntries((prev) => [saved, ...prev]);
+
       }
+
       setEntry("");
       setPrompt("");
       setIsEditing(false);
       setEditingId(null);
       setSaved(true);
+
     } catch (err) {
       console.error("save error:", err);
       alert("Could not save your entry, sorry :(");
     } finally {
       setTimeout(() => setSaved(false), 3000);
     }
+
   }
 
   return (
+
     <div className="bg-gradient-to-br from-rose-100 via-pink-100 to-rose-300 min-h-screen">
+
       <div>
         <header className="w-full text-center py-5 bg-gradient-to-br from-rose-400 to-rose-500 shadow-md text-rose-800 font-bold tracking-wide">
           <h1 className="text-3xl font-bold text-rose-50">Dear Diary</h1>
           <p className="text-sm text-rose-50 mt-1">Explore yourself with a personal journal</p>
         </header>
       </div>
+
       <div className="max-w-3xl mx-auto px-4 py-4 rounded-2xl bg-rose-200 mt-6 shadow-lg">
+
         <header>
           {prompt && (
             <div className="relative mb-6 rounded-2xl bg-rose-300 text-gray-800 p-4 shadow-md">
@@ -160,7 +177,7 @@ export default function Journal({ userId }) {
                 />
               </div>
               <button
-                onClick={handleSave}
+                onClick={saveEntry}
                 disabled={!entry.trim()}
                 className="bg-emerald-400 text-white font-semibold px-4 py-2 rounded-full hover:bg-emerald-500 disabled:opacity-50 shadow-md"
               >
@@ -174,6 +191,7 @@ export default function Journal({ userId }) {
               Generate Prompt
             </button>
           </div>
+
         </div>
 
         {saved && (
@@ -181,6 +199,7 @@ export default function Journal({ userId }) {
         )}
 
         <section>
+
           <div className="items-center mt-8 flex justify-between gap-4">
             <input
               type="text"
@@ -191,6 +210,7 @@ export default function Journal({ userId }) {
             />
           </div>
           <h2 className="text-2xl font-bold mt-10 mb-6 text-rose-50 p-3 bg-gradient-to-br from-rose-400 to-rose-600 rounded-2xl">Previous Entries</h2>
+
           {filteredEntries.length === 0 ? (
             <p className="text-gray-400 italic">No matching entries found!</p>
           ) : (
@@ -226,16 +246,21 @@ export default function Journal({ userId }) {
               {filteredEntries.map(({ id, content, mood, date }) => {
                 const isExpanded = expandedId === id;
                 const showToggle = content.length > 200;
+
                 return (
+
                   <li
                     key={id}
                     className="transition-all duration-500 ease-in-out w-full flex flex-col relative p-6 rounded-2xl bg-white border border-pink-200 shadow-md hover:shadow-xl"
                     style={{ paddingBottom: "3.5rem" }}
                   >
+
                     <div>
+                      
                       <p className={`text-gray-800 whitespace-pre-wrap break-words w-full ${isExpanded ? "" : "overflow-hidden max-h-40"}`}>
                         {content}
                       </p>
+
                       {showToggle && (
                         <button
                           onClick={() => toggleExpand(id)}
@@ -244,11 +269,15 @@ export default function Journal({ userId }) {
                           {isExpanded ? "Show Less" : "Show More"}
                         </button>
                       )}
+
                       <div className="mt-2 text-sm text-gray-500">
                         <span>Mood: {mood}</span> · <span>{new Date(date).toLocaleString()}</span>
                       </div>
+
                     </div>
+
                     <div className="absolute left-5 bottom-3 flex gap-4">
+                      
                       <button
                         onClick={() => {
                           setEntry(content);
@@ -271,6 +300,7 @@ export default function Journal({ userId }) {
                       </button>
 
                     </div>
+                    
                   </li>
                 );
               })}

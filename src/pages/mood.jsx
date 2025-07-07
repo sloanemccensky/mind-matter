@@ -145,7 +145,7 @@ export default function Mood({ userId }) {
   }, [selectedDate, selectedEmotions]);
 
   // Handle mood logging for the selected date
-  const handleLogMood = async () => {
+  const logMood = async () => {
     const existingEntry = findMoodEntryForDate(selectedDate);
     const key = normalizeDate(selectedDate).getTime();
     const emotion = selectedEmotion || "";
@@ -224,16 +224,22 @@ export default function Mood({ userId }) {
 
   // Interface rendering + design
   return (
+
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-200 to-blue-50">
+
       <header className="w-full text-center py-5 bg-gradient-to-br from-blue-400 to-blue-500 shadow-md text-blue-950 font-bold tracking-wide">
         <h1 className="text-3xl font-bold text-blue-50">Mood Meter</h1>
         <p className="text-sm text-blue-100 mt-1">Track your mood and emotions throughout the week</p>
       </header>
+
       <div className="max-w-3xl mx-auto mt-4 px-6 py-5 bg-gradient-to-b from-blue-300 via-blue-300 to-blue-300 rounded-2xl shadow-lg">
+
         <div className="mb-5 text-gray-600">
           Select a day to begin.
         </div>
+
         <div className="relative flex items-center justify-between mb-5 bg-blue-50 p-3 rounded shadow">
+
           <button
             onClick={handlePrevWeek}
             className="px-3 py-1 rounded bg-indigo-100 hover:bg-gray-300 font-semibold transition shadow-md hover:shadow-lg z-10"
@@ -251,36 +257,51 @@ export default function Mood({ userId }) {
           >
             Next
           </button>
+
         </div>
 
         <div className="mb-6 p-4 rounded-xl shadow-md bg-gradient-to-br from-indigo-100 via-blue-100 to-indigo-200">
+
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+
             {week.map((day) => {
+
               const mood = getMoodForDate(day);
               const isSelected = isSameDay(day, selectedDate);
               const emotion = getEmotionForDate(day);
+
               return (
+
                 <div
                   key={day}
                   onClick={() => setSelectedDate(day)}
                   className={`rounded-lg p-4 text-center cursor-pointer transition shadow-md hover:shadow-lg wobble ${getMoodClass(mood)} ${isSelected ? "ring-2 ring-indigo-600" : ""}`}
                 >
+
                   <div className={`text-sm font-bold text-black rounded px-1.5 py-0.4 inline-block ${getEmotionBgLightClass(mood)} ${isToday(day) ? "bg-yellow-200" : ""}`}>
                     {format(day, "EEE")}
                   </div>
+
                   <div className="text-xs text-gray-800">{format(day, "MM/dd")}</div>
+
                   <div className="relative inline-block w-9 h-9 mt-1.5 mb-1">
+
                     <div className={`w-full h-full flex items-center justify-center text-sm font-bold text-white rounded-full ${getMoodCircleColor(mood)}`}>
                       {mood ?? "—"}
                     </div>
+                    
                     <div className="absolute -bottom-1.5 -right-1.5 bg-white rounded-full p-.2 shadow text-[14px]">
                       {getMoodEmoji(mood)}
                     </div>
+
                   </div>
+
                   <div className={`mt-2 text-xs font-semibold text-white px-2 py-1 rounded ${getEmotionBgClass(mood)}`}>
                     <span className="capitalize">{emotion || "N/A"}</span>
                   </div>
+
                 </div>
+
               );
             })}
           </div>
@@ -291,8 +312,11 @@ export default function Mood({ userId }) {
         </div>
 
         <div className="mb-6 p-6 rounded-xl bg-gradient-to-br from-indigo-100 via-blue-50 to-indigo-200 shadow-md">
+          
           <div className="flex items-center justify-center gap-4 mb-2">
+            
             <label htmlFor="moodInput" className="mb-1 font-semibold text-indigo-600">Mood (1–10):</label>
+            
             <input
               id="moodInput"
               type="number"
@@ -304,26 +328,30 @@ export default function Mood({ userId }) {
             />
 
             <label htmlFor="emotionPicker" className="mb-1 font-semibold text-indigo-600">Emotion:</label>
+            
             <select
               id="emotionPicker"
               value={selectedEmotion}
               onChange={(e) => setSelectedEmotion(e.target.value)}
               className="p-2 rounded-lg border border-gray-300 shadow-md bg-gradient-to-br from-white to-gray-100"
             >
+              
               <option value="">Select emotion</option>
               {EMOTIONS.map(em => (
                 <option key={em} value={em}>
                   {em.charAt(0).toUpperCase() + em.slice(1)}
                 </option>
               ))}
+
             </select>
 
             <button
-              onClick={handleLogMood}
+              onClick={logMood}
               disabled={!isMoodValid}
               className={`px-4 py-2 rounded-lg transition shadow-md hover:shadow-lg ml-2 ${isMoodValid ? "bg-indigo-400 text-white hover:bg-indigo-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}>
               Log Mood
             </button>
+            
           </div>
           {feedback && (<div className="mt-4 text-green-700 font-semibold text-center">{feedback}</div>)}
         </div>

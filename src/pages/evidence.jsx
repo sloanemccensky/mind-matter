@@ -4,6 +4,7 @@ import "../App.css";
 const API = "http://localhost:5068"; // update this with env later
 
 export default function Evidence({ userId }) {
+    
     const [entries, setEntries] = useState([]);
     const [type, setType] = useState("Win");
     const [description, setDescription] = useState("");
@@ -17,11 +18,13 @@ export default function Evidence({ userId }) {
             .then(setEntries)
             .catch((err) => console.error("Failed to fetch evidence:", err));
     }, [userId]);
-
-    async function submit(e) {
+    
+    async function submitEntry(e) {
+        
         e.preventDefault();
         if (!description.trim()) return;
 
+        // Had to add this check to prevent users from pasting non-image data URLs
         if (imageUrl.trim().startsWith("data:image")) {
             alert("Please paste a link to an image URL (starting with https)!!!");
             return;
@@ -54,6 +57,21 @@ export default function Evidence({ userId }) {
             console.error("Save error:", err);
             alert("Could not save your entry!!! Sloane...");
         }
+
+    }
+
+    async function deleteEntry(id) {
+        
+        if (!confirm("Are you sure you want to delete this evidence entry?")) return;
+        try {
+            const res = await fetch(`${API}/evidence/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Failed to delete");
+            setEntries((prev) => prev.filter((entry) => entry.id !== id));
+        } catch (err) {
+            console.error("Error deleting:", err);
+            alert("Could not delete your entry!!! Sloane...");
+        }
+
     }
 
     const displayed = filter === "All"
@@ -68,11 +86,11 @@ export default function Evidence({ userId }) {
         <div className="bg-gradient-to-br from-violet-100 via-purple-200 to-yellow-100 min-h-screen pb-20">
             <header className="w-full tracking-wide py-5 bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-center shadow-md">
                 <h1 className="text-3xl font-bold">Self-Evidence Board</h1>
-                <p className="text-sm font-semibold mt-1">Collect triumphs from your journey</p>
+                <p className="text-sm font-semibold mt-1">Store reminders of your growth</p>
             </header>
 
             <section className="max-w-5xl mx-auto px-4 mt-8">
-                <form onSubmit={submit} className="bg-white rounded-xl shadow-md p-6 mb-8 space-y-4 border border-purple-200">
+                <form onSubmit={submitEntry} className="bg-white rounded-xl shadow-md p-6 mb-8 space-y-4 border border-purple-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <select
                             value={type}
@@ -156,6 +174,12 @@ export default function Evidence({ userId }) {
                                 <span>{new Date(entry.date).toLocaleDateString()}</span>
                                 <div className="flex gap-2">
                                     {entry.isFavorite && <span className="text-yellow-500">Highlighted!</span>}
+                                    <button
+                                        onClick={() => deleteEntry(entry.id)}
+                                        className="text-red-400 hover:text-red-600 font-medium text-xs"
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>

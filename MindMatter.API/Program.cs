@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 // Adds CORS service, as the front and back ends are on different ports for now
 builder.Services.AddCors(options =>
 {
+
     options.AddPolicy("AllowReactApp",
         policy =>
         {
@@ -52,7 +53,7 @@ app.MapPost("/journalentries", async (JournalEntry entry, IConfiguration config)
     // Prepare the SQL command to insert the new journal entry
     // and return the new ID of the entry
     var command = new SqlCommand(@"
-        INSERT INTO JournalEntries (UserId, Date, Content, Mood, Emotion) 
+        INSERT INTO JournalEntries (UserId, Date, Content, Mood, Emotion)
         VALUES (@UserId, @Date, @Content, @Mood, @Emotion);
         SELECT SCOPE_IDENTITY();
     ", connection);
@@ -69,18 +70,20 @@ app.MapPost("/journalentries", async (JournalEntry entry, IConfiguration config)
 
     // Return the new ID as well
     return Results.Created($"/journalentries/{newId}", new { Id = newId, entry.UserId, entry.Content, entry.Mood, Date = entryDate });
+
 });
 
 // POST for gratitude log submissions
 app.MapPost("/gratitude", async (GratitudeEntry entry, IConfiguration config) =>
 {
+
     var connectionString = config.GetConnectionString("DefaultConnection");
 
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
 
     var command = new SqlCommand(@"
-        INSERT INTO GratitudeEntries (UserId, Date, Notice, Feeling) 
+        INSERT INTO GratitudeEntries (UserId, Date, Notice, Feeling)
         VALUES (@UserId, @Date, @Notice, @Feeling);
         SELECT SCOPE_IDENTITY();", connection);
 
@@ -91,16 +94,17 @@ app.MapPost("/gratitude", async (GratitudeEntry entry, IConfiguration config) =>
 
     var result = await command.ExecuteScalarAsync();
     return Results.Created($"/gratitude/{result}", new { Id = result });
+
 });
 
 // POST for self-evidence reporting
 app.MapPost("/evidence", async (EvidenceEntry entry, IConfiguration config) =>
 {
+    
     var connectionString = config.GetConnectionString("DefaultConnection");
 
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
-
     var command = new SqlCommand(@"
         INSERT INTO EvidenceEntries (UserId, Date, Type, Description, ImageUrl, IsFavorite)
         VALUES (@UserId, @Date, @Type, @Description, @ImageUrl, @IsFavorite);
@@ -124,6 +128,7 @@ app.MapPost("/evidence", async (EvidenceEntry entry, IConfiguration config) =>
         entry.ImageUrl,
         entry.IsFavorite
     });
+
 });
 
 // GET to retrieve all entries for a specific user
@@ -165,6 +170,7 @@ app.MapGet("/journalentries", async (string userId, IConfiguration config) =>
 // GET to retrieve all gratitude entries for a specific user
 app.MapGet("/gratitude", async (string userId, IConfiguration config) =>
 {
+
     var connectionString = config.GetConnectionString("DefaultConnection");
 
     using var connection = new SqlConnection(connectionString);
@@ -188,13 +194,14 @@ app.MapGet("/gratitude", async (string userId, IConfiguration config) =>
     }
 
     return Results.Ok(results);
+
 });
 
 // GET to retrieve all self-evidence entries for a specific user
 app.MapGet("/evidence", async (string userId, IConfiguration config) =>
 {
-    var connectionString = config.GetConnectionString("DefaultConnection");
 
+    var connectionString = config.GetConnectionString("DefaultConnection");
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
 
@@ -222,6 +229,7 @@ app.MapGet("/evidence", async (string userId, IConfiguration config) =>
     }
 
     return Results.Ok(results);
+
 });
 
 // DELETE to remove an entry by ID
@@ -235,13 +243,28 @@ app.MapDelete("/journalentries/{id:int}", async (int id, IConfiguration config) 
 
     using var command = new SqlCommand("DELETE FROM JournalEntries WHERE Id = @Id", connection);
     command.Parameters.AddWithValue("@Id", id);
-
     var rowsAffected = await command.ExecuteNonQueryAsync();
+
     return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
 
 });
 
-// MAKE DELETE FOR SELF-EVIDENCE PAGE HERE !!!
+// DELETE to remove self-evidence entry by ID
+app.MapDelete("/evidence/{id:int}", async (int id, IConfiguration config) =>
+{
+
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand("DELETE FROM EvidenceEntries WHERE Id = @Id", connection);
+    command.Parameters.AddWithValue("@Id", id);
+    var rowsAffected = await command.ExecuteNonQueryAsync();
+
+    return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
+
+});
 
 // PUT to update an existing entry by ID
 app.MapPut("/journalentries/{id:int}", async (int id, JournalEntry updatedEntry, IConfiguration config) =>
@@ -272,8 +295,8 @@ app.MapPut("/journalentries/{id:int}", async (int id, JournalEntry updatedEntry,
 // PUT to update an existing gratitude entry by ID
 app.MapPut("/gratitude/{id:int}", async (int id, GratitudeEntry updatedEntry, IConfiguration config) =>
 {
-    var connectionString = config.GetConnectionString("DefaultConnection");
 
+    var connectionString = config.GetConnectionString("DefaultConnection");
     using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
 
@@ -290,9 +313,38 @@ app.MapPut("/gratitude/{id:int}", async (int id, GratitudeEntry updatedEntry, IC
 
     var rowsAffected = await command.ExecuteNonQueryAsync();
     return rowsAffected > 0 ? Results.Ok(new { message = "Successful :D!!" }) : Results.NotFound();
+
 });
 
-// MAKE PUT FOR SELF-EVIDENCE HERE !!!
+// PUT to update an existing self-evidence entry by ID
+app.MapPut("/evidence/{id:int}", async (int id, EvidenceEntry updatedEntry, IConfiguration config) =>
+{
+    var connectionString = config.GetConnectionString("DefaultConnection");
+
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+
+    var command = new SqlCommand(@"
+        UPDATE EvidenceEntries
+        SET Type = @Type,
+            Description = @Description,
+            ImageUrl = @ImageUrl,
+            IsFavorite = @IsFavorite
+        WHERE Id = @Id", connection);
+
+
+    command.Parameters.AddWithValue("@Id", id);
+    command.Parameters.AddWithValue("@Type", updatedEntry.Type ?? (object)DBNull.Value);
+    command.Parameters.AddWithValue("@Description", updatedEntry.Description ?? (object)DBNull.Value);
+    command.Parameters.AddWithValue("@ImageUrl", updatedEntry.ImageUrl ?? (object)DBNull.Value);
+    command.Parameters.AddWithValue("@IsFavorite", updatedEntry.IsFavorite);
+
+
+    var rowsAffected = await command.ExecuteNonQueryAsync();
+    return rowsAffected > 0 ? Results.Ok() : Results.NotFound();
+});
 
 /* TESTING */
 
@@ -310,7 +362,6 @@ app.MapGet("/api/testdb/connection", () =>
     {
         return Results.Problem($"Dafuq DB failed: {ex.Message}");
     }
-
 });
 
 app.Run();
