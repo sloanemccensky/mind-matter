@@ -4,7 +4,7 @@ import "../App.css";
 const API = "http://localhost:5068"; // update this with env later
 
 export default function Evidence({ userId }) {
-    
+
     const [entries, setEntries] = useState([]);
     const [type, setType] = useState("Win");
     const [description, setDescription] = useState("");
@@ -18,9 +18,9 @@ export default function Evidence({ userId }) {
             .then(setEntries)
             .catch((err) => console.error("Failed to fetch evidence:", err));
     }, [userId]);
-    
+
     async function submitEntry(e) {
-        
+
         e.preventDefault();
         if (!description.trim()) return;
 
@@ -61,7 +61,7 @@ export default function Evidence({ userId }) {
     }
 
     async function deleteEntry(id) {
-        
+
         if (!confirm("Are you sure you want to delete this evidence entry?")) return;
         try {
             const res = await fetch(`${API}/evidence/${id}`, { method: "DELETE" });
@@ -156,10 +156,21 @@ export default function Evidence({ userId }) {
 
                 <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
                     {displayed.map((entry) => (
+
                         <div
                             key={entry.id}
-                            className="break-inside-avoid p-4 bg-white rounded-xl shadow hover:shadow-xl border border-violet-200"
+                            className={`relative break-inside-avoid p-4 rounded-xl border transition-shadow ${entry.isFavorite
+                                ? "bg-yellow-50 border-yellow-300 shadow-[0_0_15px_rgba(255,215,0,0.6)]"
+                                : "bg-white border-violet-200 shadow hover:shadow-xl"
+                                }`}
                         >
+
+                            {entry.isFavorite && (
+                                <span className="absolute bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                                    Highlighted!
+                                </span>
+                            )}
+
                             {entry.imageUrl && (
                                 <img
                                     src={entry.imageUrl}
@@ -168,6 +179,10 @@ export default function Evidence({ userId }) {
                                     onError={(e) => e.target.style.display = 'none'} // da failsafe ... 
                                 />
                             )}
+
+                            <span className="inline-block mb-3 px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
+                                {entry.type}
+                            </span>
 
                             <div className="text-gray-800 whitespace-pre-wrap">{entry.description}</div>
                             <div className="mt-6 text-sm text-gray-500 flex justify-between items-center">
