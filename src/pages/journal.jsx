@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5068";
+import {
+  createJournalEntry,
+  fetchJournalEntries,
+  updateJournalEntry,
+  deleteJournalEntry,
+} from "../Services/JournalServices";
 
 // Mock prompts for the journal
 // Switch to LLM-customized based on previous entries later
@@ -38,19 +42,17 @@ export default function Journal({ userId }) {
   // Fetch journal entries for the user
   // Filter out entries that are just mood check-ins
   useEffect(() => {
-    fetch(`${API}/journalentries?userId=${userId}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to fetch entries");
-        return res.json();
-      })
-      .then((data) => {
+    fetchJournalEntries(userId)
+      .then(data => {
         const filtered = data.filter(entry => entry.content !== "Mood check-in only.");
         setEntries(filtered);
       })
       .catch(err => console.error("Error fetching entries:", err));
   }, [userId]);
 
-  function handleGeneratePrompt() {
+  // Generate a random prompt from the mock prompts
+  // This will be replaced with an LLM-based prompt generator later :P
+  function generatePrompt() {
     const random = mockPrompts[Math.floor(Math.random() * mockPrompts.length)];
     setPrompt(random);
   }
@@ -60,16 +62,22 @@ export default function Journal({ userId }) {
   async function confirmDelete() {
 
     if (!deleteId) return;
+
     try {
-      const res = await fetch(`${API}/journalentries/${deleteId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete entry");
-      setEntries((prev) => prev.filter((entry) => entry.id !== deleteId));
+
+      await deleteJournalEntry(deleteId);
+      setEntries(prev => prev.filter(entry => entry.id !== deleteId));
+
     } catch (err) {
+
       console.error("Error deleting entry:", err);
       alert("Sorry, something went wrong while deleting your entry!");
+
     } finally {
+
       setShowDeleteConfirm(false);
       setDeleteId(null);
+
     }
 
   }
@@ -80,40 +88,27 @@ export default function Journal({ userId }) {
   async function saveEntry() {
 
     if (!entry.trim()) return;
+
     const entryData = {
-      userId: userId,
+      userId,
       content: entry,
       mood: mood || 5,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     };
 
     try {
 
-      let res;
       if (isEditing) {
 
-        res = await fetch(`${API}/journalentries/${editingId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(entryData),
-        });
-
-        if (!res.ok) throw new Error("update fail");
-        setEntries((prev) =>
-          prev.map((e) => e.id === editingId ? { ...e, ...entryData, date: e.date } : e)
+        await updateJournalEntry(editingId, entryData);
+        setEntries(prev =>
+          prev.map(e => e.id === editingId ? { ...e, ...entryData, date: e.date } : e)
         );
 
       } else {
 
-        res = await fetch(`${API}/journalentries`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(entryData),
-        });
-
-        if (!res.ok) throw new Error("save fail");
-        const saved = await res.json();
-        setEntries((prev) => [saved, ...prev]);
+        const saved = await createJournalEntry(entryData);
+        setEntries(prev => [saved, ...prev]);
 
       }
 
@@ -124,10 +119,14 @@ export default function Journal({ userId }) {
       setSaved(true);
 
     } catch (err) {
+
       console.error("save error:", err);
       alert("Could not save your entry, sorry :(");
+
     } finally {
+
       setTimeout(() => setSaved(false), 3000);
+
     }
 
   }
@@ -155,6 +154,7 @@ export default function Journal({ userId }) {
         </header>
 
         <div className="bg-rose-300 p-4 rounded-2xl shadow-md">
+
           <textarea
             className="w-full h-64 p-4 rounded-2xl bg-rose-50 text-gray-800 resize-none border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-lg"
             placeholder="What’s on your mind today?"
@@ -164,6 +164,7 @@ export default function Journal({ userId }) {
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-wrap">
+
               <div className="flex items-center gap-2 bg-rose-400 px-4 py-2 rounded-full text-rose-950 shadow-md">
                 <label htmlFor="mood" className="whitespace-nowrap font-semibold">Mood (1–10):</label>
                 <input
@@ -176,6 +177,7 @@ export default function Journal({ userId }) {
                   className="p-1 rounded bg-rose-100 text-gray-700 w-16 text-center hover:bg-rose-50"
                 />
               </div>
+
               <button
                 onClick={saveEntry}
                 disabled={!entry.trim()}
@@ -183,13 +185,16 @@ export default function Journal({ userId }) {
               >
                 {isEditing ? "Update Entry" : "Save Entry"}
               </button>
+
             </div>
+
             <button
-              onClick={handleGeneratePrompt}
+              onClick={generatePrompt}
               className="bg-rose-200 text-rose-950 font-semibold px-4 py-2 rounded-full hover:bg-rose-400 shadow-md"
             >
               Generate Prompt
             </button>
+
           </div>
 
         </div>
@@ -209,6 +214,7 @@ export default function Journal({ userId }) {
               className="w-full px-4 py-2 rounded-full border border-rose-300 bg-rose-50 text-gray-800 shadow-md focus:outline-none focus:ring-2 focus:ring-rose-400"
             />
           </div>
+
           <h2 className="text-2xl font-bold mt-10 mb-6 text-rose-50 p-3 bg-gradient-to-br from-rose-400 to-rose-600 rounded-2xl">Previous Entries</h2>
 
           {filteredEntries.length === 0 ? (
@@ -218,11 +224,15 @@ export default function Journal({ userId }) {
             <ul className="space-y-6">
 
               {showDeleteConfirm && (
+
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
                   <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
+
                     <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
                     <p className="mb-6">Are you sure you want to delete this journal entry? This action cannot be undone.</p>
                     <div className="flex justify-end gap-4">
+
                       <button
                         onClick={() => {
                           setShowDeleteConfirm(false);
@@ -232,76 +242,82 @@ export default function Journal({ userId }) {
                       >
                         Cancel
                       </button>
+
                       <button
                         onClick={confirmDelete}
                         className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
                       >
                         Delete
                       </button>
+
                     </div>
                   </div>
                 </div>
               )}
 
               {filteredEntries.map(({ id, content, mood, date }) => {
+
                 const isExpanded = expandedId === id;
                 const showToggle = content.length > 200;
 
                 return (
+                  <>
+                    <li
+                      key={id}
+                      className="transition-all duration-500 ease-in-out w-full flex flex-col relative p-6 rounded-2xl bg-white border border-pink-200 shadow-md hover:shadow-xl"
+                      style={{ paddingBottom: "3.5rem" }}
+                    >
 
-                  <li
-                    key={id}
-                    className="transition-all duration-500 ease-in-out w-full flex flex-col relative p-6 rounded-2xl bg-white border border-pink-200 shadow-md hover:shadow-xl"
-                    style={{ paddingBottom: "3.5rem" }}
-                  >
+                      <div>
 
-                    <div>
-                      
-                      <p className={`text-gray-800 whitespace-pre-wrap break-words w-full ${isExpanded ? "" : "overflow-hidden max-h-40"}`}>
-                        {content}
-                      </p>
+                        <p className={`text-gray-800 whitespace-pre-wrap break-words w-full ${isExpanded ? "" : "overflow-hidden max-h-40"}`}>
+                          {content}
+                        </p>
 
-                      {showToggle && (
-                        <button
-                          onClick={() => toggleExpand(id)}
-                          className="text-pink-500 text-sm mt-2 hover:underline"
-                        >
-                          {isExpanded ? "Show Less" : "Show More"}
-                        </button>
-                      )}
+                        {showToggle && (
+                          <button
+                            onClick={() => toggleExpand(id)}
+                            className="text-pink-500 text-sm mt-2 hover:underline"
+                          >
+                            {isExpanded ? "Show Less" : "Show More"}
+                          </button>
 
-                      <div className="mt-2 text-sm text-gray-500">
-                        <span>Mood: {mood}</span> · <span>{new Date(date).toLocaleString()}</span>
+                        )}
+
+                        <div className="mt-2 text-sm text-gray-500">
+                          <span>Mood: {mood}</span> · <span>{new Date(date).toLocaleString()}</span>
+                        </div>
+
                       </div>
 
-                    </div>
+                      <div className="absolute left-5 bottom-3 flex gap-4">
 
-                    <div className="absolute left-5 bottom-3 flex gap-4">
-                      
-                      <button
-                        onClick={() => {
-                          setEntry(content);
-                          setMood(mood);
-                          setIsEditing(true);
-                          setEditingId(id);
-                        }}
-                        className="text-yellow-500 hover:underline text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => {
-                          setDeleteId(id);
-                          setShowDeleteConfirm(true);
-                        }}
-                        className="text-red-500 hover:underline text-sm"
-                      >
-                        Delete
-                      </button>
+                        <button
+                          onClick={() => {
+                            setEntry(content);
+                            setMood(mood);
+                            setIsEditing(true);
+                            setEditingId(id);
+                          }}
+                          className="text-yellow-500 hover:underline text-sm"
+                        >
+                          Edit
+                        </button>
 
-                    </div>
-                    
-                  </li>
+                        <button
+                          onClick={() => {
+                            setDeleteId(id);
+                            setShowDeleteConfirm(true);
+                          }}
+                          className="text-red-500 hover:underline text-sm"
+                        >
+                          Delete
+                        </button>
+
+                      </div>
+
+                    </li>
+                  </>
                 );
               })}
             </ul>

@@ -2,8 +2,13 @@ import React, { useState, useEffect } from "react";
 import { format, addDays, subDays, isToday, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import {
+    fetchGratitudeEntries,
+    saveGratitudeEntry,
+} from "../Services/GratitudeServices";
 
 const Gratitude = ({ userId }) => {
+    
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [entries, setEntries] = useState({});
     const [inputStates, setInputStates] = useState({});
@@ -50,46 +55,32 @@ const Gratitude = ({ userId }) => {
 
     // Checks if an entry exists for the date, and either updates or creates a new one
     const save = async (date) => {
-
+        
         const input = inputStates[date] || { notice: "", feeling: "" };
         const existingEntry = entries[date];
 
-        const infoDat = {
+        const entryData = {
             userId,
             date,
             notice: input.notice,
             feeling: input.feeling,
+            ...(existingEntry && { id: existingEntry.id }),
         };
 
         try {
 
-            const res = await fetch(
-                `${API}/gratitude${existingEntry ? `/${existingEntry.id}` : ""}`,
-                {
-                    method: existingEntry ? "PUT" : "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(infoDat),
-                }
-            );
+            const result = await saveGratitudeEntry(entryData, !!existingEntry);
+            const id = result.id || (existingEntry && existingEntry.id);
 
-            if (res.ok) {
-
-                // If the entry was updated or created successfully, update the state
-                const result = await res.json();
-                const id = result.id || (existingEntry && existingEntry.id);
-                setEntries((prev) => ({ ...prev, [date]: { ...infoDat, id } }));
-                setEditingStates((prev) => ({ ...prev, [date]: false }));
-                setInputStates((prev) => ({
-                    ...prev,
-                    [date]: { notice: infoDat.notice, feeling: infoDat.feeling },
-                }));
-
-            } else {
-                console.error("Save failed!!! Call Sloane.");
-            }
-
-        } catch (err) {
-            console.error("Error saving dat entry:", err);
+            setEntries((prev) => ({ ...prev, [date]: { ...entryData, id } }));
+            setEditingStates((prev) => ({ ...prev, [date]: false }));
+            setInputStates((prev) => ({
+                ...prev,
+                [date]: { notice: entryData.notice, feeling: entryData.feeling },
+            }));
+        
+        } catch {
+            // error logged in service
         }
 
     };
@@ -106,38 +97,43 @@ const Gratitude = ({ userId }) => {
 
     const filledPercentage = Math.round((loggedDaysCount / allDaysInMonth.length) * 100);
 
-    // GO FISH my deelizzus entries from the API
+    // GO FISH my deelizzus gratitude entries
     useEffect(() => {
+
         const fetchEntries = async () => {
+
             try {
-                const res = await fetch(`${API}/gratitude?userId=${userId}`);
-                const data = await res.json();
+
+                const data = await fetchGratitudeEntries(userId);
 
                 const formatted = {};
                 const inputs = {};
                 const editing = {};
 
                 data.forEach((entry) => {
+
                     const dateKey = format(new Date(entry.date), "yyyy-MM-dd");
                     formatted[dateKey] = entry;
                     inputs[dateKey] = {
                         notice: entry.notice,
                         feeling: entry.feeling,
                     };
+
                     editing[dateKey] = false;
+
                 });
 
                 setEntries(formatted);
                 setInputStates(inputs);
                 setEditingStates(editing);
 
-            } catch (err) {
-                console.error("Gratitoodius loading failed:", err);
+            } catch {
+                // error logged in service
             }
+
         };
 
         fetchEntries();
-
     }, [userId]);
 
     return (
@@ -150,9 +146,9 @@ const Gratitude = ({ userId }) => {
             </header>
 
             <div className="mt-2 py-3 px-6 text-center">
-                
+
                 <div className="flex flex-col items-center gap-1">
-                    
+
                     <div className="text-cyan-900 font-semibold text-sm">
                         Gratitude Level – {loggedDaysCount}/{allDaysInMonth.length} days logged
                     </div>
@@ -177,7 +173,7 @@ const Gratitude = ({ userId }) => {
             <div className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-300 flex flex-col lg:flex-row justify-center items-stretch gap-6 px-4 mt-2 py-4 mb-4 max-w-screen-lg mx-auto rounded-lg shadow-lg w-full h-auto">
 
                 <div className="calendar-wrap self-stretch bg-cyan-50 rounded-lg shadow-md p-4 flex items-center justify-center">
-                    
+
                     <Calendar
                         onChange={calendarClicka}
                         value={selectedDate}
@@ -191,9 +187,9 @@ const Gratitude = ({ userId }) => {
                 </div>
 
                 <div className="w-full max-w-xl bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-lg shadow-lg px-6 py-6 flex flex-col justify-between">
-                    
+
                     <div className="flex justify-between items-center mb-4 py-4 px-4 bg-cyan-50 rounded-lg shadow-md">
-                        
+
                         <button
                             onClick={toPrevDay}
                             className="rounded px-4 py-2 font-semibold bg-cyan-300 hover:bg-slate-300 transition shadow"
@@ -242,7 +238,7 @@ const Gratitude = ({ userId }) => {
                                 </div>
 
                             ) : (
-                                
+
                                 <div className="entry-form">
 
                                     <div className="input-wrapper">

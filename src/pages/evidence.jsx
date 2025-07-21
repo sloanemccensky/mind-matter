@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "../App.css";
+import {
+    fetchEvidenceEntries,
+    saveEvidenceEntry,
+    deleteEvidenceEntry,
+} from "../Services/SelfEvidenceServices";
 
 const API = "http://localhost:5068"; // update this with env later
 
@@ -13,14 +18,15 @@ export default function Evidence({ userId }) {
     const [filter, setFilter] = useState("All");
 
     useEffect(() => {
-        fetch(`${API}/evidence?userId=${userId}`)
-            .then((res) => res.json())
+
+        fetchEvidenceEntries(userId)
             .then(setEntries)
             .catch((err) => console.error("Failed to fetch evidence:", err));
+
     }, [userId]);
 
     async function submitEntry(e) {
-
+        
         e.preventDefault();
         if (!description.trim()) return;
 
@@ -36,26 +42,22 @@ export default function Evidence({ userId }) {
             type,
             description,
             imageUrl,
-            isFavorite
+            isFavorite,
         };
 
         try {
-            const res = await fetch(`${API}/evidence`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newEntry),
-            });
 
-            if (!res.ok) throw new Error("Failed to save your entry!!");
-            const saved = await res.json();
+            const saved = await saveEvidenceEntry(newEntry);
             setEntries((prev) => [saved, ...prev]);
             setDescription("");
             setImageUrl("");
             setType("Win");
             setIsFavorite(false);
-        } catch (err) {
-            console.error("Save error:", err);
+
+        } catch {
+
             alert("Could not save your entry!!! Sloane...");
+        
         }
 
     }
@@ -63,13 +65,16 @@ export default function Evidence({ userId }) {
     async function deleteEntry(id) {
 
         if (!confirm("Are you sure you want to delete this evidence entry?")) return;
+        
         try {
-            const res = await fetch(`${API}/evidence/${id}`, { method: "DELETE" });
-            if (!res.ok) throw new Error("Failed to delete");
+
+            await deleteEvidenceEntry(id);
             setEntries((prev) => prev.filter((entry) => entry.id !== id));
-        } catch (err) {
-            console.error("Error deleting:", err);
+        
+        } catch {
+            
             alert("Could not delete your entry!!! Sloane...");
+        
         }
 
     }
